@@ -1,14 +1,14 @@
 import json
 
 
-sample_timetable = {
+timetable = {
     "Monday": {800: 0, 815: 0, 830: 0, 845: 0, 900: 0, 915: 0, 930: 0, 945: 0, 1000: 0, 1015: 0, 1030: 0, 1045: 0, 1100: 0, 1115: 0, 1130: 0, 1145: 0, 1200: 0, 1215: 0, 1230: 0, 1245: 0, 1300: 0, 1315: 0, 1330: 0, 1345: 0, 1400: 0, 1415: 0, 1430: 0, 1445: 0, 1500: 0, 1515: 0, 1530: 0, 1545: 0, 1600: 0, 1615: 0, 1630: 0, 1645: 0, 1700: 0, 1715: 0, 1730: 0, 1745: 0, 1800: 0, 1815: 0, 1830: 0, 1845: 0, 1900: 0, 1915: 0, 1930: 0, 1945: 0, 2000: 0, 2015: 0, 2030: 0, 2045: 0, 2100: 0, 2115: 0},
     "Tuesday": {800: 0, 815: 0, 830: 0, 845: 0, 900: 0, 915: 0, 930: 0, 945: 0, 1000: 0, 1015: 0, 1030: 0, 1045: 0, 1100: 0, 1115: 0, 1130: 0, 1145: 0, 1200: 0, 1215: 0, 1230: 0, 1245: 0, 1300: 0, 1315: 0, 1330: 0, 1345: 0, 1400: 0, 1415: 0, 1430: 0, 1445: 0, 1500: 0, 1515: 0, 1530: 0, 1545: 0, 1600: 0, 1615: 0, 1630: 0, 1645: 0, 1700: 0, 1715: 0, 1730: 0, 1745: 0, 1800: 0, 1815: 0, 1830: 0, 1845: 0, 1900: 0, 1915: 0, 1930: 0, 1945: 0, 2000: 0, 2015: 0, 2030: 0, 2045: 0, 2100: 0, 2115: 0},
     "Wednesday": {800: 0, 815: 0, 830: 0, 845: 0, 900: 0, 915: 0, 930: 0, 945: 0, 1000: 0, 1015: 0, 1030: 0, 1045: 0, 1100: 0, 1115: 0, 1130: 0, 1145: 0, 1200: 0, 1215: 0, 1230: 0, 1245: 0, 1300: 0, 1315: 0, 1330: 0, 1345: 0, 1400: 0, 1415: 0, 1430: 0, 1445: 0, 1500: 0, 1515: 0, 1530: 0, 1545: 0, 1600: 0, 1615: 0, 1630: 0, 1645: 0, 1700: 0, 1715: 0, 1730: 0, 1745: 0, 1800: 0, 1815: 0, 1830: 0, 1845: 0, 1900: 0, 1915: 0, 1930: 0, 1945: 0, 2000: 0, 2015: 0, 2030: 0, 2045: 0, 2100: 0, 2115: 0},
     "Thursday": {800: 0, 815: 0, 830: 0, 845: 0, 900: 0, 915: 0, 930: 0, 945: 0, 1000: 0, 1015: 0, 1030: 0, 1045: 0, 1100: 0, 1115: 0, 1130: 0, 1145: 0, 1200: 0, 1215: 0, 1230: 0, 1245: 0, 1300: 0, 1315: 0, 1330: 0, 1345: 0, 1400: 0, 1415: 0, 1430: 0, 1445: 0, 1500: 0, 1515: 0, 1530: 0, 1545: 0, 1600: 0, 1615: 0, 1630: 0, 1645: 0, 1700: 0, 1715: 0, 1730: 0, 1745: 0, 1800: 0, 1815: 0, 1830: 0, 1845: 0, 1900: 0, 1915: 0, 1930: 0, 1945: 0, 2000: 0, 2015: 0, 2030: 0, 2045: 0, 2100: 0, 2115: 0},
     "Friday": {800: 0, 815: 0, 830: 0, 845: 0, 900: 0, 915: 0, 930: 0, 945: 0, 1000: 0, 1015: 0, 1030: 0, 1045: 0, 1100: 0, 1115: 0, 1130: 0, 1145: 0, 1200: 0, 1215: 0, 1230: 0, 1245: 0, 1300: 0, 1315: 0, 1330: 0, 1345: 0, 1400: 0, 1415: 0, 1430: 0, 1445: 0, 1500: 0, 1515: 0, 1530: 0, 1545: 0, 1600: 0, 1615: 0, 1630: 0, 1645: 0, 1700: 0, 1715: 0, 1730: 0, 1745: 0, 1800: 0, 1815: 0, 1830: 0, 1845: 0, 1900: 0, 1915: 0, 1930: 0, 1945: 0, 2000: 0, 2015: 0, 2030: 0, 2045: 0, 2100: 0, 2115: 0},
     "Saturday": {800: 0, 815: 0, 830: 0, 845: 0, 900: 0, 915: 0, 930: 0, 945: 0, 1000: 0, 1015: 0, 1030: 0, 1045: 0, 1100: 0, 1115: 0, 1130: 0, 1145: 0, 1200: 0, 1215: 0, 1230: 0, 1245: 0, 1300: 0, 1315: 0, 1330: 0, 1345: 0, 1400: 0, 1415: 0, 1430: 0, 1445: 0, 1500: 0, 1515: 0, 1530: 0, 1545: 0, 1600: 0, 1615: 0, 1630: 0, 1645: 0, 1700: 0, 1715: 0, 1730: 0, 1745: 0, 1800: 0, 1815: 0, 1830: 0, 1845: 0, 1900: 0, 1915: 0, 1930: 0, 1945: 0, 2000: 0, 2015: 0, 2030: 0, 2045: 0, 2100: 0, 2115: 0},
-    "Sunday": {800: 0, 815: 0, 830: 0, 845: 0, 900: 0, 915: 0, 930: 0, 945: 0, 1000: 0, 1015: 0, 1030: 0, 1045: 0, 1100: 0, 1115: 0, 1130: 0, 1145: 0, 1200: 0, 1215: 0, 1230: 0, 1245: 0, 1300: 0, 1315: 0, 1330: 0, 1345: 0, 1400: 0, 1415: 0, 1430: 0, 1445: 0, 1500: 0, 1515: 0, 1530: 0, 1545: 0, 1600: 0, 1615: 0, 1630: 0, 1645: 0, 1700: 0, 1715: 0, 1730: 0, 1745: 0, 1800: 0, 1815: 0, 1830: 0, 1845: 0, 1900: 0, 1915: 0, 1930: 0, 1945: 0, 2000: 0, 2015: 0, 2030: 0, 2045: 0, 2100: 0, 2115: 0},
+    "Sunday": {800: 0, 815: 0, 830: 0, 845: 0, 900: 0, 915: 0, 930: 0, 945: 0, 1000: 0, 1015: 0, 1030: 0, 1045: 0, 1100: 0, 1115: 0, 1130: 0, 1145: 0, 1200: 0, 1215: 0, 1230: 0, 1245: 0, 1300: 0, 1315: 0, 1330: 0, 1345: 0, 1400: 0, 1415: 0, 1430: 0, 1445: 0, 1500: 0, 1515: 0, 1530: 0, 1545: 0, 1600: 0, 1615: 0, 1630: 0, 1645: 0, 1700: 0, 1715: 0, 1730: 0, 1745: 0, 1800: 0, 1815: 0, 1830: 0, 1845: 0, 1900: 0, 1915: 0, 1930: 0, 1945: 0, 2000: 0, 2015: 0, 2030: 0, 2045: 0, 2100: 0, 2115: 0}
     }
 
 class_schedule_info = {
@@ -42,53 +42,26 @@ class_schedule_info = {
 }
 
 
-def reset_timetable():
-    for timeslot in timetable:
-        for time in timetable[timeslot]:
-            timetable[timeslot][time] = 0
-
-
-def create_schedule():
-    # Define the original timetable
-    original_timetable = {
-        "Monday": {800: 0, 815: 0, 830: 0, 845: 0, 900: 0, 915: 0, 930: 0, 945: 0, 1000: 0, 1015: 0, 1030: 0, 1045: 0, 1100: 0, 1115: 0, 1130: 0, 1145: 0, 1200: 0, 1215: 0, 1230: 0, 1245: 0, 1300: 0, 1315: 0, 1330: 0, 1345: 0, 1400: 0, 1415: 0, 1430: 0, 1445: 0, 1500: 0, 1515: 0, 1530: 0, 1545: 0, 1600: 0, 1615: 0, 1630: 0, 1645: 0, 1700: 0, 1715: 0, 1730: 0, 1745: 0, 1800: 0, 1815: 0, 1830: 0, 1845: 0, 1900: 0, 1915: 0, 1930: 0, 1945: 0, 2000: 0, 2015: 0, 2030: 0, 2045: 0, 2100: 0, 2115: 0},
-        "Tuesday": {800: 0, 815: 0, 830: 0, 845: 0, 900: 0, 915: 0, 930: 0, 945: 0, 1000: 0, 1015: 0, 1030: 0, 1045: 0, 1100: 0, 1115: 0, 1130: 0, 1145: 0, 1200: 0, 1215: 0, 1230: 0, 1245: 0, 1300: 0, 1315: 0, 1330: 0, 1345: 0, 1400: 0, 1415: 0, 1430: 0, 1445: 0, 1500: 0, 1515: 0, 1530: 0, 1545: 0, 1600: 0, 1615: 0, 1630: 0, 1645: 0, 1700: 0, 1715: 0, 1730: 0, 1745: 0, 1800: 0, 1815: 0, 1830: 0, 1845: 0, 1900: 0, 1915: 0, 1930: 0, 1945: 0, 2000: 0, 2015: 0, 2030: 0, 2045: 0, 2100: 0, 2115: 0},
-        "Wednesday": {800: 0, 815: 0, 830: 0, 845: 0, 900: 0, 915: 0, 930: 0, 945: 0, 1000: 0, 1015: 0, 1030: 0, 1045: 0, 1100: 0, 1115: 0, 1130: 0, 1145: 0, 1200: 0, 1215: 0, 1230: 0, 1245: 0, 1300: 0, 1315: 0, 1330: 0, 1345: 0, 1400: 0, 1415: 0, 1430: 0, 1445: 0, 1500: 0, 1515: 0, 1530: 0, 1545: 0, 1600: 0, 1615: 0, 1630: 0, 1645: 0, 1700: 0, 1715: 0, 1730: 0, 1745: 0, 1800: 0, 1815: 0, 1830: 0, 1845: 0, 1900: 0, 1915: 0, 1930: 0, 1945: 0, 2000: 0, 2015: 0, 2030: 0, 2045: 0, 2100: 0, 2115: 0},
-        "Thursday": {800: 0, 815: 0, 830: 0, 845: 0, 900: 0, 915: 0, 930: 0, 945: 0, 1000: 0, 1015: 0, 1030: 0, 1045: 0, 1100: 0, 1115: 0, 1130: 0, 1145: 0, 1200: 0, 1215: 0, 1230: 0, 1245: 0, 1300: 0, 1315: 0, 1330: 0, 1345: 0, 1400: 0, 1415: 0, 1430: 0, 1445: 0, 1500: 0, 1515: 0, 1530: 0, 1545: 0, 1600: 0, 1615: 0, 1630: 0, 1645: 0, 1700: 0, 1715: 0, 1730: 0, 1745: 0, 1800: 0, 1815: 0, 1830: 0, 1845: 0, 1900: 0, 1915: 0, 1930: 0, 1945: 0, 2000: 0, 2015: 0, 2030: 0, 2045: 0, 2100: 0, 2115: 0},
-        "Friday": {800: 0, 815: 0, 830: 0, 845: 0, 900: 0, 915: 0, 930: 0, 945: 0, 1000: 0, 1015: 0, 1030: 0, 1045: 0, 1100: 0, 1115: 0, 1130: 0, 1145: 0, 1200: 0, 1215: 0, 1230: 0, 1245: 0, 1300: 0, 1315: 0, 1330: 0, 1345: 0, 1400: 0, 1415: 0, 1430: 0, 1445: 0, 1500: 0, 1515: 0, 1530: 0, 1545: 0, 1600: 0, 1615: 0, 1630: 0, 1645: 0, 1700: 0, 1715: 0, 1730: 0, 1745: 0, 1800: 0, 1815: 0, 1830: 0, 1845: 0, 1900: 0, 1915: 0, 1930: 0, 1945: 0, 2000: 0, 2015: 0, 2030: 0, 2045: 0, 2100: 0, 2115: 0},
-        "Saturday": {800: 0, 815: 0, 830: 0, 845: 0, 900: 0, 915: 0, 930: 0, 945: 0, 1000: 0, 1015: 0, 1030: 0, 1045: 0, 1100: 0, 1115: 0, 1130: 0, 1145: 0, 1200: 0, 1215: 0, 1230: 0, 1245: 0, 1300: 0, 1315: 0, 1330: 0, 1345: 0, 1400: 0, 1415: 0, 1430: 0, 1445: 0, 1500: 0, 1515: 0, 1530: 0, 1545: 0, 1600: 0, 1615: 0, 1630: 0, 1645: 0, 1700: 0, 1715: 0, 1730: 0, 1745: 0, 1800: 0, 1815: 0, 1830: 0, 1845: 0, 1900: 0, 1915: 0, 1930: 0, 1945: 0, 2000: 0, 2015: 0, 2030: 0, 2045: 0, 2100: 0, 2115: 0},
-        "Sunday": {800: 0, 815: 0, 830: 0, 845: 0, 900: 0, 915: 0, 930: 0, 945: 0, 1000: 0, 1015: 0, 1030: 0, 1045: 0, 1100: 0, 1115: 0, 1130: 0, 1145: 0, 1200: 0, 1215: 0, 1230: 0, 1245: 0, 1300: 0, 1315: 0, 1330: 0, 1345: 0, 1400: 0, 1415: 0, 1430: 0, 1445: 0, 1500: 0, 1515: 0, 1530: 0, 1545: 0, 1600: 0, 1615: 0, 1630: 0, 1645: 0, 1700: 0, 1715: 0, 1730: 0, 1745: 0, 1800: 0, 1815: 0, 1830: 0, 1845: 0, 1900: 0, 1915: 0, 1930: 0, 1945: 0, 2000: 0, 2015: 0, 2030: 0, 2045: 0, 2100: 0, 2115: 0},
-    }
-    
-    # Iterate through each day of the week
-    for day in original_timetable:
-        print(f"Is your schedule busy on {day}? (yes/no):")
-        busy_input = input()
-        
-        # Check if the user is busy on the current day
-        if busy_input.lower() == "yes":
-            start_time = int(input(f"Enter busy start time for {day} (in military time): "))
-            end_time = int(input(f"Enter busy end time for {day} (in military time): "))
-            
-            # Update the timetable for the specified day and time slots
-            for time_slot in range(start_time, end_time + 15, 15):
-                original_timetable[day][time_slot] = 1
-    
-    return original_timetable
-
-# Call the function to create the schedule
-updated_timetable = create_schedule()
-timetable = sample_timetable
-# print(timetable)
-
 data = class_schedule_info
 
 
 def create_timetable(print_timetable):
-    # print(print_timetable)
     print("monday              tuesday             friday              saturday ")
     for time in print_timetable["Monday"]:
         print(str(time) + " - " + str(print_timetable["Monday"][time]) + "            " + str(time) + " - " + str(print_timetable["Tuesday"][time]) + "            " + str(time) + " - " + str(print_timetable["Friday"][time]) + "            " + str(time) + " - " + str(print_timetable["Saturday"][time]))
+
+def personal_schedule():
+    for day in timetable:
+        print(f"Is your schedule busy on {day}? (yes/no):")
+        busy_input = input()
+        if busy_input == "yes":
+            print(f"Start time for {day}: in 24hour format (ex. 8:00 AM = 800):")
+            start_time = int(input())
+            print(f"End time for {day}: in 24hour format (ex. 8:00 AM = 800):")
+            end_time = int(input())
+            for time in timetable[day]:
+                if time >= start_time and time <= end_time:
+                    timetable[day][time] = 1
 
 def classlist(classes):
     schedules = []
@@ -111,6 +84,11 @@ def classlist(classes):
 
     return schedules
 
+def reset_timetable():
+    for timeslot in timetable:
+        for time in timetable[timeslot]:
+            timetable[timeslot][time] = 0
+
 
 # Recursive function to generate combinations
 def generate_combinations(current_combination, current_index):
@@ -122,39 +100,31 @@ def generate_combinations(current_combination, current_index):
         generate_combinations(current_combination, current_index + 1)
         current_combination.pop()
 
-# Start generating combinations
-# generate_combinations([], 0)
-
-def schedule_class(time_table):
+def schedule_class():
     classes = []
     for combination in combinations:
         for i, value in enumerate(combination):
             for time_slot in data[list(data.keys())[i]][value][0]:
-                time_table[data[list(data.keys())[i]][value][1]][time_slot] += 1
+                # if first key meaing monday add one to monday and wednesday
+                # if second key meaning tuesday add one to tuesday and thursday
+                # if third key meaning friday add one to friday
+                # if fourth key meaning saturday add one to saturday
+                # if fifth key meaning sunday add one to sunday
 
-        if all(value < 2 for value in time_table["Monday"].values()) and all(value < 2 for value in time_table["Tuesday"].values()) and all(value < 2 for value in time_table["Friday"].values()) and all(value < 2 for value in time_table["Saturday"].values()):
+                if data[list(data.keys())[i]][value][1] == "Monday":
+                    timetable["Monday"][time_slot] += 1
+                    timetable["Wednesday"][time_slot] += 1
+                elif data[list(data.keys())[i]][value][1] == "Tuesday":
+                    timetable["Tuesday"][time_slot] += 1
+                    timetable["Thursday"][time_slot] += 1
+                else:
+                    timetable[data[list(data.keys())[i]][value][1]][time_slot] += 1
+
+        # Check if all the time slots value is less than 2
+        if all(value < 2 for value in timetable["Monday"].values()) and all(value < 2 for value in timetable["Tuesday"].values()) and all(value < 2 for value in timetable["Friday"].values()) and all(value < 2 for value in timetable["Saturday"].values()):
             classes.append(combination)
-        # time_table = updated_timetable
-
+        # reset_timetable()
     return classes
-
-
-            
-
-    # classes = []
-    # for combination in combinations:
-    #     for i, value in enumerate(combination):
-    #         for time_slot in data[list(data.keys())[i]][value][0]:
-    #             time_table[data[list(data.keys())[i]][value][1]][time_slot] += 1
-
-    #     # Check if all the time slots value is less than 2
-    #     if all(value < 2 for value in time_table["Monday"].values()) and all(value < 2 for value in timetable["Tuesday"].values()) and all(value < 2 for value in timetable["Friday"].values()) and all(value < 2 for value in timetable["Saturday"].values()):
-    #         classes.append(combination)
-    #     timetable = updated_timetable
-
-    #     # print(timetable)
-    #     # print("-----------------------------------")
-    # return classes
 
 def create_outputfile(json_data):
     output_file = "output.json"
@@ -163,9 +133,9 @@ def create_outputfile(json_data):
 
 combinations = []
 value_lists = [list(data[key]) for key in data.keys()]
-print(generate_combinations([], 0))
-print(schedule_class(timetable))
-create_outputfile(classlist(schedule_class(timetable)))
-
-
-
+generate_combinations([], 0)
+personal_schedule()
+print(timetable)
+# print(schedule_class())
+create_outputfile(classlist(schedule_class()))
+# create_timetable(timetable)
