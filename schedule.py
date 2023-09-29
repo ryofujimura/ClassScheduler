@@ -1,3 +1,5 @@
+import json
+
 def find_class_combinations(class_schedule_info, personal_schedule):
     def backtrack(index, current_combination):
         if index == len(class_schedule_info):
@@ -67,12 +69,25 @@ def print_combinations():
     combinations = find_class_combinations(class_schedule_info, personal_schedule)
     for i, combination in enumerate(combinations):
         print(f"Combination {i + 1}:")
-        for i, section in enumerate(combination):
-            print(f"  Class: { list(class_schedule_info.keys())[i]}, Day: {section[1]}, Time: {section[0]}")
+        for j, section in enumerate(combination):
+            print(f"  Class: {list(class_schedule_info.keys())[j]}, Day: {section[1]}, Time: {section[0]}")
         print()
 
+def output_combinations():
+    # output combinations as a json file just like print_combinations()
+    combinations = find_class_combinations(class_schedule_info, personal_schedule)
+    output = []
+    for i, combination in enumerate(combinations):
+        combination_dict = {}
+        for j, section in enumerate(combination):
+            combination_dict[list(class_schedule_info.keys())[j]] = {"day": section[1], "time": section[0]}
+        output.append(combination_dict)
+    with open("output.json", "w") as f:
+        json.dump(output, f)
+
+
 def main():
-    print_combinations()
+    output_combinations()
 
 if __name__ == "__main__":
     main()
