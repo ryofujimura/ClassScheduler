@@ -1,45 +1,5 @@
 import json
 
-class_schedule_info = {
-    "341": [
-        [[1200, 1430], ["Friday"]],
-        [[800, 1030], ["Saturday"]],
-    ],
-    "325": [
-        [[1800, 1915], ["Monday", "Wednesday"]],
-        [[1700, 1815], ["Tuesday", "Thursday"]],
-    ],
-    "491A": [
-        [[1400, 1515], ["Monday", "Wednesday"]],
-        [[1930, 2045], ["Tuesday", "Thursday"]],
-        [[1830, 1945], ["Monday", "Wednesday"]],
-        [[2000, 2115], ["Tuesday", "Thursday"]],
-    ],
-    "326": [
-        [[1700, 1815], ["Tuesday", "Thursday"]],
-        [[1400, 1515], ["Monday", "Wednesday"]],
-    ],
-    "342": [
-        [[1230, 1345], ["Tuesday", "Thursday"]],
-        [[1400, 1515], ["Monday", "Wednesday"]],
-        [[1300, 1530], ["Friday"]],
-        [[1800, 1915], ["Monday", "Wednesday"]],
-        [[930, 1045], ["Tuesday", "Thursday"]],
-        [[800, 1045], ["Friday"]],
-        [[1830, 1945], ["Tuesday", "Thursday"]],
-    ],
-}
-
-personal_schedule = [
-    [[800, 1200], ["Monday"]],
-    [[800, 1200], ["Tuesday"]],
-    [[800, 1200], ["Wednesday"]],
-    [[800, 1200], ["Thursday"]],
-    [[800, 1100], ["Friday"]],
-    [[800, 1100], ["Saturday"]],
-    [[1000, 2000], ["Sunday"]],
-]
-
 '''
 This function generates all possible combinations of class sections that do not overlap with each other or the personal schedule using a backtracking approach. It calls the backtrack function to explore different combinations.
 '''
@@ -72,21 +32,10 @@ def find_class_combinations(class_schedule_info, personal_schedule):
     def overlap_personal_schedule(section):
         time, day = section
         for personal_section in personal_schedule:
-            print(personal_section[0][1])
-            # day may have multiple values
             for d in day:
                 if d in personal_section[1] and (time[0] <= personal_section[0][1] and personal_section[0][0] <= time[1]):
                     return True
         return False
-    
-        #     if day in personal_section[1] and (time[0] <= personal_section[0][1] and personal_section[0][0] <= time[1]):
-        #         return True
-        # return False
-    
-    #     for personal_section in personal_schedule:
-    #         if overlap(section, personal_section):
-    #             return True
-    #     return False
 
     combinations = []
     backtrack(0, [])
@@ -94,9 +43,17 @@ def find_class_combinations(class_schedule_info, personal_schedule):
     return combinations
 
 '''
+This function loads the class schedule information from a JSON file.
+'''
+def load_class_schedule_info(filename):
+    with open(filename, 'r') as file:
+        data = json.load(file)
+    return data
+
+'''
 This function calls find_class_combinations to find all combinations and then prints them to the console.
 '''
-def print_combinations():
+def print_combinations(class_schedule_info, personal_schedule):
     combinations = find_class_combinations(class_schedule_info, personal_schedule)
     for i, combination in enumerate(combinations):
         print(f"Combination {i + 1}:")
@@ -106,7 +63,7 @@ def print_combinations():
 '''
 It stores the combinations in a JSON file named "output.json" instead of printing them.
 '''
-def output_combinations():
+def output_combinations(class_schedule_info, personal_schedule):
     # output combinations as a json file just like print_combinations()
     combinations = find_class_combinations(class_schedule_info, personal_schedule)
     output = []
@@ -120,8 +77,10 @@ def output_combinations():
 
 
 def main():
-    print_combinations()
-    output_combinations()
+    class_schedule_info = load_class_schedule_info("class_schedule_info.json")
+    personal_schedule = load_class_schedule_info("personal_schedule.json")
+    print_combinations(class_schedule_info, personal_schedule)
+    output_combinations(class_schedule_info, personal_schedule)
 
 if __name__ == "__main__":
     main()
