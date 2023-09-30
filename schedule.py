@@ -31,8 +31,13 @@ class_schedule_info = {
 }
 
 personal_schedule = [
-    # [[800, 2000], ["Saturday"]],
-    # [[1000, 2000], ["Sunday"]],
+    [[800, 1200], ["Monday"]],
+    [[800, 1200], ["Tuesday"]],
+    [[800, 1200], ["Wednesday"]],
+    [[800, 1200], ["Thursday"]],
+    [[800, 1100], ["Friday"]],
+    [[800, 1100], ["Saturday"]],
+    [[1000, 2000], ["Sunday"]],
 ]
 
 '''
@@ -65,10 +70,23 @@ def find_class_combinations(class_schedule_info, personal_schedule):
     This function checks whether a class section overlaps with the personal schedule.
     '''
     def overlap_personal_schedule(section):
+        time, day = section
         for personal_section in personal_schedule:
-            if overlap(section, personal_section):
-                return True
+            print(personal_section[0][1])
+            # day may have multiple values
+            for d in day:
+                if d in personal_section[1] and (time[0] <= personal_section[0][1] and personal_section[0][0] <= time[1]):
+                    return True
         return False
+    
+        #     if day in personal_section[1] and (time[0] <= personal_section[0][1] and personal_section[0][0] <= time[1]):
+        #         return True
+        # return False
+    
+    #     for personal_section in personal_schedule:
+    #         if overlap(section, personal_section):
+    #             return True
+    #     return False
 
     combinations = []
     backtrack(0, [])
