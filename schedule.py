@@ -31,8 +31,8 @@ class_schedule_info = {
 }
 
 personal_schedule = [
-    [[800, 2000], ["Saturday"]],
-    [[1000, 2000], ["Sunday"]],
+    # [[800, 2000], ["Saturday"]],
+    # [[1000, 2000], ["Sunday"]],
 ]
 
 '''
