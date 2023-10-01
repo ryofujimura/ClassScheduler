@@ -1,26 +1,22 @@
 from flask import Flask, render_template, request, jsonify
-import subprocess
 import json
 import os
-import sys
-import subprocess
 
 app = Flask(__name__)
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
     if request.method == 'POST':
-        # Get the path to the current Python interpreter
-        python_executable = sys.executable
+        # Get the JSON data from the client
+        data = request.get_json()
 
-        # Run the Python script using the current interpreter
-        subprocess.run([python_executable, "scripts/my_script.py"])
+        # Save the JSON data as personal_schedule.json in the static folder
+        output_path = os.path.join(app.static_folder, 'personal_schedule.json')
+        with open(output_path, 'w') as json_file:
+            json.dump(data, json_file, indent=2)
 
-        # Read the output JSON file
-        with open("output.json", "r") as json_file:
-            output_data = json.load(json_file)
+        return jsonify(success=True)
 
-        return jsonify(output_data)
     return render_template('index.html')
 
 if __name__ == '__main__':

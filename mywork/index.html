@@ -1,4 +1,4 @@
-<!-- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -27,34 +27,4 @@
     <div id="scheduleTables"></div>
     <script src="../static/script.js"></script>
     </body>
-</html> -->
-<!-- index.html -->
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Trigger Schedule</title>
-</head>
-<body>
-    <button id="runSchedule">Run Schedule</button>
-    <div id="output"></div>
-    <script>
-        document.getElementById('runSchedule').addEventListener('click', function() {
-            fetch('/run-schedule', {
-                method: 'POST',
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    document.getElementById('output').textContent = 'Schedule executed:\n' + data.output;
-                } else {
-                    document.getElementById('output').textContent = 'Error: ' + data.message;
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                document.getElementById('output').textContent = 'Error occurred.';
-            });
-        });
-    </script>
-</body>
 </html>
