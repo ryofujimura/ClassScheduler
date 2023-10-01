@@ -1,21 +1,13 @@
-async function fetchData(url) {
-    try {
-        const response = await fetch(url);
-        if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-        return await response.json();
-    } catch (error) {
-        console.error("Error fetching data:", error);
-        return null;
-    }
-}
-
-fetchData("output.json").then(data => {
-    if (data) {
-        createTimetables(data);
-    }
-});
+// Fetch data from output.json from outside the templates folder
+fetch('../ClassScheduler/data/output.json')
+.then(response => response.json())
+.then(data => {
+    // Once the JSON data is loaded, call createTimetables with the data
+    createTimetables(data);
+})
+.catch(error => {
+    console.error('Error loading data from output.json:', error);
+}); 
 
 // Define a color-coding scheme based on class ID
 const classColors = {
@@ -100,7 +92,80 @@ function createTimetables(schedules) {
     }
 }
 
-// Create timetables for each schedule
-for (let i = 0; i < schedules.length; i++) {
-    createTimetables(schedules[i], i + 1);
+const addTimingButton = document.getElementById('addTiming');
+const timingsContainer = document.getElementById('timings');
+const form = document.querySelector('form');
+
+addTimingButton.addEventListener('click', function () {
+    createTimingInput();
+});
+
+form.addEventListener('submit', function (event) {
+    event.preventDefault();
+    const scheduleData = collectScheduleData();
+    const formattedData = formatScheduleData(scheduleData);
+    const jsonData = JSON.stringify(formattedData, null, 2);
+
+    // Create a Blob containing the JSON data
+    const blob = new Blob([jsonData], { type: 'application/json' });
+
+    // Create a URL for the Blob
+    const url = URL.createObjectURL(blob);
+
+    // Create a link element for manual download
+    const downloadLink = document.createElement('a');
+    downloadLink.href = url;
+    downloadLink.download = 'personal_schedule.json';
+
+    // Trigger a click event to prompt manual download
+    downloadLink.click();
+
+    // Release the URL
+    URL.revokeObjectURL(url);
+});
+
+timingsContainer.addEventListener('click', function (event) {
+    if (event.target.classList.contains('deleteTiming')) {
+        event.target.parentElement.remove();
+    }
+});
+
+function createTimingInput() {
+    const timingDiv = document.createElement('div');
+    timingDiv.classList.add('timing');
+
+    timingDiv.innerHTML = `
+        <label for="timing">Timing (e.g., 800-1200):</label>
+        <input type="text" name="timing" required>
+        <label for="days">Days (comma-separated, e.g., Monday, Tuesday):</label>
+        <input type="text" name="days" required>
+        <button type="button" class="deleteTiming">Delete</button>
+    `;
+
+    timingsContainer.appendChild(timingDiv);
+}
+
+function collectScheduleData() {
+    const timingInputs = document.querySelectorAll('.timing');
+    const scheduleData = [];
+
+    timingInputs.forEach(function (timingInput) {
+        const timing = timingInput.querySelector('input[name="timing"]').value;
+        const days = timingInput.querySelector('input[name="days"]').value.split(',').map(day => day.trim());
+
+        scheduleData.push({ timing, days });
+    });
+
+    return scheduleData;
+}
+
+function formatScheduleData(scheduleData) {
+    return scheduleData.map(entry => [
+        [parseTiming(entry.timing), entry.days],
+    ]);
+}
+
+function parseTiming(timingString) {
+    const [start, end] = timingString.split('-').map(time => parseInt(time.trim()));
+    return [start, end];
 }

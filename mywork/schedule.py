@@ -77,10 +77,8 @@ def output_combinations(class_schedule_info, personal_schedule):
 
 
 def main():
-    # class_schedule_info = load_class_schedule_info("class_schedule_info.json")
-    # personal_schedule = load_class_schedule_info("static/personal_schedule.json")
-    class_schedule_info = load_class_schedule_info("scripts/class_schedule_info.json")
-    personal_schedule = load_class_schedule_info("static/personal_schedule.json")
+    class_schedule_info = load_class_schedule_info("class_schedule_info.json")
+    personal_schedule = load_class_schedule_info("personal_schedule.json")
     print_combinations(class_schedule_info, personal_schedule)
     output_combinations(class_schedule_info, personal_schedule)
 
