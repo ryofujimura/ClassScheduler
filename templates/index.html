@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Flask App</title>
+    <title>Class Scheduler</title>
     <link rel="stylesheet" href="static/styles.css">
 </head>
 <body>
-    <h1>Flask App</h1>
+    <h1>Class Scheduler</h1>
     <form method="POST" id="myForm">
         <label for="start_time">Start Time (HHMM):</label>
         <input type="text" name="start_time" id="start_time" placeholder="e.g., 0800"><br>
@@ -17,6 +17,7 @@
         <button onclick="refreshPage()">2. Refresh Page</button>
     </form>
     <!-- <div id="output"></div> -->
+    <div id="personalTable"></div>
     <div id="scheduleTables"></div>
 
     <script>
@@ -156,6 +157,21 @@
         for (let i = 0; i < schedules.length; i++) {
             createTimetables(schedules[i], i + 1);
         }
+
+        // Create a personal timetable
+        const personalTableContainer = document.getElementById("personalTable");
+        const personalTable = document.createElement("table");
+        personalTable.id = "personal";
+
+        // Create a row for weekday labels
+        const personalWeekdayLabelRow = document.createElement("tr");
+        const personalWeekdayLabels = ["time", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+        personalWeekdayLabels.forEach(weekdayLabel => {
+            const personalWeekdayLabelCell = document.createElement("th");
+            personalWeekdayLabelCell.textContent = weekdayLabel;
+            personalWeekdayLabelRow.appendChild(personalWeekdayLabelCell);
+        });
+        personalTable.appendChild(personalWeekdayLabelRow);
         
     </script>
 </body>
