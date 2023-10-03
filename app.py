@@ -1,23 +1,19 @@
-from flask import Flask, render_template, request
+# app.py
+from flask import Flask, render_template, request, jsonify
+from scripts.calculator import square_number
 
 app = Flask(__name__)
 
-def calculate_square(number):
-    return number * number
-
-@app.route('/', methods=['GET', 'POST'])
+@app.route('/')
 def index():
-    result = None
-    if request.method == 'POST':
-        try:
-            user_input = float(request.form['number'])
-            result = calculate_square(user_input)
-        except ValueError:
-            result = "Invalid input. Please enter a valid number."
+    return render_template('index.html')
 
-        return str(result)
-
-    return render_template('index.html', result=result)
+@app.route('/calculate', methods=['POST'])
+def calculate():
+    data = request.get_json()
+    input_number = data['input']
+    result = square_number(input_number)
+    return jsonify({'result': result})
 
 if __name__ == '__main__':
     app.run(debug=True)
