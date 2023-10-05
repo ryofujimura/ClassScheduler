@@ -6,26 +6,183 @@
     <title>Dynamic Flask Website</title>
 </head>
 <body>
-    <h1>Calculate the Square of a Number</h1>
-    <input type="number" id="inputNumber" placeholder="Enter a number">
+    <h1>Schedule Time</h1>
+    
+    <form id="scheduleForm">
+        <label for="startTime">Start Time:</label>
+        <select id="startTime">
+            <!-- Add more options from 8 am to 9 pm in 15 minutes time frames -->
+            <option value="0800">08:00 AM</option>
+            <option value="0815">08:15 AM</option>
+            <option value="0830">08:30 AM</option>
+            <option value="0845">08:45 AM</option>
+            <option value="0900">09:00 AM</option>
+            <option value="0915">09:15 AM</option>
+            <option value="0930">09:30 AM</option>
+            <option value="0945">09:45 AM</option>
+            <option value="1000">10:00 AM</option>
+            <option value="1015">10:15 AM</option>
+            <option value="1030">10:30 AM</option>
+            <option value="1045">10:45 AM</option>
+            <option value="1100">11:00 AM</option>
+            <option value="1115">11:15 AM</option>
+            <option value="1130">11:30 AM</option>
+            <option value="1145">11:45 AM</option>
+            <option value="1200">12:00 PM</option>
+            <option value="1215">12:15 PM</option>
+            <option value="1230">12:30 PM</option>
+            <option value="1245">12:45 PM</option>
+            <option value="1300">01:00 PM</option>
+            <option value="1315">01:15 PM</option>
+            <option value="1330">01:30 PM</option>
+            <option value="1345">01:45 PM</option>
+            <option value="1400">02:00 PM</option>
+            <option value="1415">02:15 PM</option>
+            <option value="1430">02:30 PM</option>
+            <option value="1445">02:45 PM</option>
+            <option value="1500">03:00 PM</option>
+            <option value="1515">03:15 PM</option>
+            <option value="1530">03:30 PM</option>
+            <option value="1545">03:45 PM</option>
+            <option value="1600">04:00 PM</option>
+            <option value="1615">04:15 PM</option>
+            <option value="1630">04:30 PM</option>
+            <option value="1645">04:45 PM</option>
+            <option value="1700">05:00 PM</option>
+            <option value="1715">05:15 PM</option>
+            <option value="1730">05:30 PM</option>
+            <option value="1745">05:45 PM</option>
+            <option value="1800">06:00 PM</option>
+            <option value="1815">06:15 PM</option>
+            <option value="1830">06:30 PM</option>
+            <option value="1845">06:45 PM</option>
+            <option value="1900">07:00 PM</option>
+            <option value="1915">07:15 PM</option>
+            <option value="1930">07:30 PM</option>
+            <option value="1945">07:45 PM</option>
+            <option value="2000">08:00 PM</option>
+            <option value="2015">08:15 PM</option>
+            <option value="2030">08:30 PM</option>
+            <option value="2045">08:45 PM</option>
+            <option value="2100">09:00 PM</option>
+            <option value="2115">09:15 PM</option>
+            <option value="2130">09:30 PM</option>
+            <option value="2145">09:45 PM</option>
+            <option value="2200">10:00 PM</option>
+        </select>
+
+        <label for="endTime">End Time:</label>
+        <select id="endTime">
+            <option value="0800">08:00 AM</option>
+            <option value="0815">08:15 AM</option>
+            <option value="0830">08:30 AM</option>
+            <option value="0845">08:45 AM</option>
+            <option value="0900">09:00 AM</option>
+            <option value="0915">09:15 AM</option>
+            <option value="0930">09:30 AM</option>
+            <option value="0945">09:45 AM</option>
+            <option value="1000">10:00 AM</option>
+            <option value="1015">10:15 AM</option>
+            <option value="1030">10:30 AM</option>
+            <option value="1045">10:45 AM</option>
+            <option value="1100">11:00 AM</option>
+            <option value="1115">11:15 AM</option>
+            <option value="1130">11:30 AM</option>
+            <option value="1145">11:45 AM</option>
+            <option value="1200">12:00 PM</option>
+            <option value="1215">12:15 PM</option>
+            <option value="1230">12:30 PM</option>
+            <option value="1245">12:45 PM</option>
+            <option value="1300">01:00 PM</option>
+            <option value="1315">01:15 PM</option>
+            <option value="1330">01:30 PM</option>
+            <option value="1345">01:45 PM</option>
+            <option value="1400">02:00 PM</option>
+            <option value="1415">02:15 PM</option>
+            <option value="1430">02:30 PM</option>
+            <option value="1445">02:45 PM</option>
+            <option value="1500">03:00 PM</option>
+            <option value="1515">03:15 PM</option>
+            <option value="1530">03:30 PM</option>
+            <option value="1545">03:45 PM</option>
+            <option value="1600">04:00 PM</option>
+            <option value="1615">04:15 PM</option>
+            <option value="1630">04:30 PM</option>
+            <option value="1645">04:45 PM</option>
+            <option value="1700">05:00 PM</option>
+            <option value="1715">05:15 PM</option>
+            <option value="1730">05:30 PM</option>
+            <option value="1745">05:45 PM</option>
+            <option value="1800">06:00 PM</option>
+            <option value="1815">06:15 PM</option>
+            <option value="1830">06:30 PM</option>
+            <option value="1845">06:45 PM</option>
+            <option value="1900">07:00 PM</option>
+            <option value="1915">07:15 PM</option>
+            <option value="1930">07:30 PM</option>
+            <option value="1945">07:45 PM</option>
+            <option value="2000">08:00 PM</option>
+            <option value="2015">08:15 PM</option>
+            <option value="2030">08:30 PM</option>
+            <option value="2045">08:45 PM</option>
+            <option value="2100">09:00 PM</option>
+            <option value="2115">09:15 PM</option>
+            <option value="2130">09:30 PM</option>
+            <option value="2145">09:45 PM</option>
+            <option value="2200">10:00 PM</option>
+        </select>
+
+        <div id="Weekdays">
+            <label>Days of the week:</label>
+            <input type="checkbox" id="monday" name="days" value="Monday">
+            <label for="monday">Monday</label>
+            <input type="checkbox" id="tuesday" name="days" value="Tuesday">
+            <label for="tuesday">Tuesday</label>
+            <input type="checkbox" id="wednesday" name="days" value="Wednesday">
+            <label for="wednesday">Wednesday</label>
+            <input type="checkbox" id="thursday" name="days" value="Thursday">
+            <label for="thursday">Thursday</label>
+            <input type="checkbox" id="friday" name="days" value="Friday">
+            <label for="friday">Friday</label>
+            <input type="checkbox" id="saturday" name="days" value="Saturday">
+            <label for="saturday">Saturday</label>
+            <input type="checkbox" id="sunday" name="days" value="Sunday">
+            <label for="sunday">Sunday</label>
+        </div>
+    </form>
+
     <p id="result">Result: </p>
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
         $(document).ready(function() {
-            $('#inputNumber').on('input', function() {
-                var input = $(this).val();
-                if (!isNaN(input)) {
+            $('#scheduleForm').on('input', function() {
+                var startTime = $('#startTime').val();
+                var endTime = $('#endTime').val();
+                var daysOfWeek = [];
+                
+                $("input[name='days']:checked").each(function () {
+                    daysOfWeek.push($(this).val());
+                });
+
+                // Check if at least one checkbox is checked
+                if (daysOfWeek.length > 0) {
+                    // Send an AJAX request when any input changes
                     $.ajax({
                         type: 'POST',
-                        url: '/calculate',
-                        data: JSON.stringify({'input': parseFloat(input)}),
+                        url: '/calculate_schedule',
+                        data: JSON.stringify({
+                            'startTime': startTime,
+                            'endTime': endTime,
+                            'daysOfWeek': daysOfWeek
+                        }),
                         contentType: 'application/json',
                         success: function(data) {
-                            $('#result').text('Result: ' + data.result);
+                            $('#result').text('Result: ' + data.personal_schedule);
                         }
                     });
                 } else {
+                    // No checkboxes are checked, so clear the result
                     $('#result').text('Result: ');
                 }
             });
