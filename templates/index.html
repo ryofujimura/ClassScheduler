@@ -6,7 +6,38 @@
     <title>Dynamic Flask Website</title>
     <style>
         /* Reset some default styles */
-        html, body, h2, table {
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+
+        #classes-container {
+            margin-top: 20px;
+        }
+
+        h2 {
+            font-size: 18px;
+            color: #444;
+        }
+
+        h3 {
+            font-size: 16px;
+            color: #666;
+        }
+
+        h4 {
+            font-size: 14px;
+            color: #888;
+        }
+        html,
+        body,
+        h2,
+        table {
             margin: 0;
             padding: 0;
         }
@@ -25,12 +56,14 @@
             margin-top: 10px;
             table-layout: fixed;
         }
-        table th, table td {
+        table th,
+        table td {
             border: 1px solid #ddd;
             text-align: center;
-            width: 14.28%; 
+            width: 14.28%;
         }
-        th, td {
+        th,
+        td {
             padding: 8px;
             text-align: center;
         }
@@ -66,6 +99,63 @@
         }
         .busy {
             background-color: #8e091d; /* Light Pink */
+        }
+
+        .class-input,
+        .time-input,
+        .start-time-select,
+        .end-time-select {
+            width: 80%;
+            padding: 8px;
+            margin-bottom: 8px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        .section-input {
+            display: inline-block;
+            width: 80%;
+            padding: 8px;
+            margin-bottom: 8px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        .delete-class-button,
+        .delete-section-button,
+        .clear-class-button,
+        .add-section-button {
+            background-color: #ff6347;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            margin-left: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            vertical-align: middle;
+        }
+
+        .delete-class-button:hover,
+        .delete-section-button:hover,
+        .clear-class-button:hover,
+        .add-section-button:hover {
+            background-color: #ff4500;
+        }
+
+        div {
+            margin-bottom: 10px;
+        }
+
+        label {
+            margin-right: 10px;
+        }
+
+        select {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 8px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
         }
     </style>
 </head>
@@ -212,6 +302,19 @@
             <label for="sunday">Sunday</label>
         </div>
     </form>
+
+    <h3>Class Schedule</h3>
+    <form id="classesForm">
+        <div id="classes-container">
+            <div>
+                <input type="text" class="class-input" placeholder="Class Name">
+                <button class="clear-class-button" onclick="deleteClassInput(this)">Delete Class</button>
+                <br>
+                <h4>Section Inputs</h4>
+                <button class="add-section-button" onclick="addSectionInput(this)">Add Section</button>
+            </div>
+        </div>
+        <button id="addClassButton" class="add-section-button" onclick="addClassInput()">Add Class</button>
 
     <p id="result">Result: </p>
     <div id="scheduleTables"></div>
