@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Class and Section Input</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+
+        #classes-container {
+            margin-top: 20px;
+        }
+
+        h2 {
+            font-size: 18px;
+            color: #444;
+        }
+
+        h3 {
+            font-size: 16px;
+            color: #666;
+        }
+
+        h4 {
+            font-size: 14px;
+            color: #888;
+        }
+
+        .class-input, .time-input, .start-time-select, .end-time-select {
+            width: 80%;
+            padding: 8px;
+            margin-bottom: 8px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        .section-input {
+            display: inline-block;
+            width: 80%;
+            padding: 8px;
+            margin-bottom: 8px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        .delete-class-button, .delete-section-button, .add-section-button {
+            background-color: #FF6347;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            margin-left: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            vertical-align: middle;
+        }
+
+        .delete-class-button:hover, .delete-section-button:hover, .add-section-button:hover {
+            background-color: #FF4500;
+        }
+
+        div {
+            margin-bottom: 10px;
+        }
+
+        label {
+            margin-right: 10px;
+        }
+
+        select {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 8px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Class and Section Input</h1>
+    <div id="classes-container">
+        <h2>Class Inputs</h2>
+        <button id="addClassButton" class="add-section-button">Add Class</button>
+    </div>
+
+    <script>
+        let classCount = 0;
+
+        function addClassInput() {
+            classCount++;
+            const classInput = document.createElement("div");
+            classInput.innerHTML = `
+                <h3>Class ${classCount}</h3>
+                <input type="text" class="class-input" placeholder="Class Name">
+                <button class="delete-class-button" onclick="deleteClassInput(this)">Delete Class</button>
+                <br>
+                <h4>Section Inputs</h4>
+                <button class="add-section-button" onclick="addSectionInput(this)">Add Section</button>
+            `;
+            document.getElementById("classes-container").appendChild(classInput);
+        }
+
+        function deleteClassInput(button) {
+            const classInput = button.parentElement;
+            if (classInput.parentNode.children.length > 1) {
+                classInput.parentNode.removeChild(classInput);
+            }
+        }
+
+        function addSectionInput(button) {
+            const sectionCount = button.parentElement.querySelectorAll(".section-input").length + 1;
+            const sectionInput = document.createElement("div");
+            sectionInput.innerHTML = `
+                <p>Section ${sectionCount}</p>
+                <input type="text" class="start-time-select" placeholder="Start Time">
+                <input type="text" class="end-time-select" placeholder="End Time">
+                <div>
+                    <label for="monday">Monday</label>
+                    <input type="checkbox" id="monday" name="weekdays" value="Monday">
+                    <label for="tuesday">Tuesday</label>
+                    <input type="checkbox" id="tuesday" name="weekdays" value="Tuesday">
+                    <label for="wednesday">Wednesday</label>
+                    <input type="checkbox" id="wednesday" name="weekdays" value="Wednesday">
+                    <label for="thursday">Thursday</label>
+                    <input type="checkbox" id="thursday" name="weekdays" value="Thursday">
+                    <label for="friday">Friday</label>
+                    <input type="checkbox" id="friday" name="weekdays" value="Friday">
+                </div>
+                <button class="delete-section-button" onclick="deleteSectionInput(this)">Delete Section</button>
+            `;
+            button.parentElement.insertBefore(sectionInput, button);
+        }
+
+        function deleteSectionInput(button) {
+            const sectionInput = button.parentElement;
+            if (sectionInput.parentElement.children.length > 1) {
+                sectionInput.parentElement.removeChild(sectionInput);
+            }
+        }
+
+        document.getElementById("addClassButton").addEventListener("click", addClassInput);
+    </script>
+</body>
+</html>
