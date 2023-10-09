@@ -5,7 +5,7 @@ from scripts.calculator import square_number, create_personal_schedule, output_c
 app = Flask(__name__)
 class_schedule = {
     "341": [
-        [[1200, 1430], ["Friday"]],
+        [[1300, 1530], ["Friday"]],
         [[800, 1030], ["Saturday"]]
     ],
     "325": [
@@ -23,16 +23,12 @@ class_schedule = {
         [[1400, 1515], ["Monday", "Wednesday"]]
     ],
     "342": [
-        [[1230, 1345], ["Tuesday", "Thursday"]],
+        [[1400, 1515], ["Tuesday", "Thursday"]],
         [[1400, 1515], ["Monday", "Wednesday"]],
-        [[1300, 1530], ["Friday"]],
         [[1800, 1915], ["Monday", "Wednesday"]],
-        [[930, 1045], ["Tuesday", "Thursday"]],
-        [[800, 1045], ["Friday"]],
-        [[1830, 1945], ["Tuesday", "Thursday"]]
+        [[1530, 1645], ["Monday", "Wednesday"]]
     ]
 }
-
 
 @app.route('/')
 def index():
