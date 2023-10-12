@@ -22,7 +22,7 @@
 
         h2 {
             font-size: 18px;
-            color: #444;
+            color: #c8ff00;
         }
 
         h3 {
@@ -161,7 +161,7 @@
 </head>
 <body>
     <h1>Schedule Time</h1>
-    <h3>Personal Schedule</h3>
+    <h2>Personal Schedule</h2>
     <form id="scheduleForm">
         <label for="startTime">Start Time:</label>
         <select id="startTime">
@@ -303,12 +303,12 @@
         </div>
     </form>
 
-    <h3>Class Schedule</h3>
+    <h2>Class Schedule</h2>
     <form id="classesForm">
         <div id="classes-container">
             <div>
                 <input type="text" class="class-input" placeholder="Class Name">
-                <button class="clear-class-button" onclick="deleteClassInput(this)">Delete Class</button>
+                <button class="clear-class-button" onclick="clearClassInput(this)">Clear Class</button>
                 <br>
                 <h4>Section Inputs</h4>
                 <button class="add-section-button" onclick="addSectionInput(this)">Add Section</button>
@@ -316,7 +316,7 @@
         </div>
         <button id="addClassButton" class="add-section-button" onclick="addClassInput()">Add Class</button>
 
-    <p id="result">Result: </p>
+    <h2 id="result">Result: </h2>
     <div id="scheduleTables"></div>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
@@ -385,7 +385,7 @@
                 const schedule = schedules[i];
 
                 // Create an <h2> heading for the schedule number
-                const h2 = $('<h2>').text(`Schedule ${i + 1}`);
+                const h2 = $('<h3>').text(`Schedule ${i + 1}`);
                 tableContainer.append(h2);
 
                 const table = $('<table>').attr('id', `schedule${i + 1}`);
