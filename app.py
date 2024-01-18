@@ -8,31 +8,72 @@ from scripts.calculator import (
 
 app = Flask(__name__)
 class_schedule = {
-    "341": [
-        [[1300, 1530], ["Friday"]],
-        [[800, 1030], ["Saturday"]]
+    "329": [
+        [[800, 915], ["Tuesday", "Thursday"]],
+        [[1730, 1845], ["Tuesday", "Thursday"]],
+        [[930, 1045], ["Tuesday", "Thursday"]],
+        [[1230,1345], ["Monday", "Wednesday"]]
     ],
-    "325": [
-        [[1800, 1915], ["Monday", "Wednesday"]],
-        [[1700, 1815], ["Tuesday", "Thursday"]]
-    ],
-    "491A": [
-        [[1400, 1515], ["Monday", "Wednesday"]],
-        [[1930, 2045], ["Tuesday", "Thursday"]],
-        [[1830, 1945], ["Monday", "Wednesday"]],
-        [[2000, 2115], ["Tuesday", "Thursday"]]
-    ],
-    "326": [
-        [[1700, 1815], ["Tuesday", "Thursday"]],
-        [[1400, 1515], ["Monday", "Wednesday"]]
-    ],
-    "342": [
+    "122": [
+        [[800, 915], ["Monday", "Wednesday"]],
+        [[1200, 1350], ["Friday"]],
+        [[800, 950], ["Tuesday", "Thursday"]],
+        [[800, 950], ["Friday"]],
+        [[1000, 1150], ["Friday"]],
+        [[930, 1045], ["Tuesday", "Thursday"]],
+        [[1000, 1150], ["Wednesday"]],
+        [[1600, 1715], ["Tuesday", "Thursday"]],
+        [[1600, 1750], ["Wednesday"]],
+        [[1230, 1345], ["Tuesday", "Thursday"]],
+        [[800, 950], ["Friday"]],
+        [[1000, 1150], ["Friday"]],
         [[1400, 1515], ["Tuesday", "Thursday"]],
-        [[1400, 1515], ["Monday", "Wednesday"]],
-        [[1800, 1915], ["Monday", "Wednesday"]],
-        [[1530, 1645], ["Monday", "Wednesday"]]
-    ]
-}
+        [[1530, 1720], ["Tuesday"]],
+        [[1530, 1720], ["Thursday"]],
+        [[1100, 1215], ["Monday", "Wednesday"]],
+        [[1200, 1350], ["Tuesday"]],
+        [[1400, 1550], ["Tuesday"]],
+        [[1100, 1215], ["Monday", "Wednesday"]],
+        [[800, 950], ["Friday"]],
+        [[1000, 1150], ["Friday"]],
+        [[1400, 1515], ["Tuesday", "Thursday"]],
+        [[1530, 1720], ["Tuesday"]],
+        [[1530, 1720], ["Thursday"]],
+        [[1100, 1215], ["Tuesday", "Thursday"]],
+        [[800, 950], ["Wednesday"]],
+        [[1000, 1150], ["Wednesday"]],
+        [[930, 1045], ["Monday", "Wednesday"]],
+        [[900, 1050], ["Friday"]],
+        [[1230, 1345], ["Monday", "Wednesday"]],
+        [[1200, 1350], ["Thursday"]],
+        [[1400, 1550], ["Thursday"]],
+        [[1230, 1345], ["Monday", "Wednesday"]],
+        [[800, 950], ["Thursday"]],
+        [[1000, 1150], ["Thursday"]],
+        [[1100, 1215], ["Tuesday", "Thursday"]],
+        [[1000, 1150], ["Wednesday"]],
+        [[1530, 1645], ["Monday", "Wednesday"]],
+        [[1400, 1550], ["Tuesday"]],
+        [[1400, 1550], ["Monday", "Wednesday"]],
+        [[1400, 1550], ["Tuesday"]],
+        [[1100, 1215], ["Monday", "Wednesday"]],
+        [[800, 915], ["Monday", "Wednesday"]],
+        [[800, 950], ["Friday"]],
+        [[800, 950], ["Tuesday", "Thursday"]],
+        [[800, 950], ["Friday"]],
+        [[1000, 1150], ["Friday"]],
+        [[1230, 1345], ["Tuesday", "Thursday"]],
+        [[1400, 1550], ["Tuesday"]],
+        [[1400, 1550], ["Thursday"]],
+        [[1100, 1215], ["Tuesday", "Thursday"]],
+        [[800, 950], ["Wednesday"]],
+        [[1000, 1150], ["Wednesday"]],
+        [[930, 1045], ["Tuesday", "Thursday"]],
+        [[900, 1050], ["Friday"]],
+        [[1230, 1345], ["Tuesday", "Thursday"]],
+        [[1200, 1350], ["Friday"]],
+        [[1400, 1550], ["Friday"]]]
+    }
 x = 10
 
 

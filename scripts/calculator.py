@@ -59,5 +59,6 @@ def output_combinations(class_schedule_info, personal_schedule):
                 "day": section[1],
                 "time": section[0],
             }
+            
         output.append(combination_dict)
     return output
