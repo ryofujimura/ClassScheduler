@@ -35,5 +35,6 @@ def get_class_times():
     return jsonify(all_times)
 
 if __name__ == '__main__':
-# try port 5001
-    app.run(port=5001)
+    app.debug = True
+    # use port 5000
+    app.run(port=5000)

@@ -3,6 +3,24 @@
 <head>
     <title>Available Classes</title>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 8px;
+            text-align: center;
+            border: 1px solid #ddd;
+        }
+        .circle {
+            height: 12px;
+            width: 12px;
+            background-color: black;
+            border-radius: 50%;
+            display: inline-block;
+        }
+    </style>
     <script>
         $(document).ready(function() {
             $('input[type="checkbox"]').change(function() {
@@ -17,13 +35,50 @@
                         contentType: "application/json",
                         data: JSON.stringify({ class_ids: selectedClassIds }),
                         success: function(response) {
-                            $('#classTimes').empty();
+                            $('#classTimes').empty().append(`
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Class Name</th>
+                                            <th>Time</th>
+                                            <th>Mon</th>
+                                            <th>Tue</th>
+                                            <th>Wed</th>
+                                            <th>Thu</th>
+                                            <th>Fri</th>
+                                            <th>Sat</th>
+                                            <th>Sun</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
+                            `);
+
                             $.each(response, function(classId, times) {
-                                $('#classTimes').append(`<h3>Time Slots for Class ID: ${classId}</h3><ul>`);
                                 $.each(times, function(i, time) {
-                                    $('#classTimes').append(`<li>${time.days}: ${time.start_time} - ${time.end_time}</li>`);
+                                    let days = {
+                                        "Mon": time.days.includes("M") ? '<span class="circle"></span>' : "",
+                                        "Tue": time.days.includes("Tu") ? '<span class="circle"></span>' : "",
+                                        "Wed": time.days.includes("W") ? '<span class="circle"></span>' : "",
+                                        "Thu": time.days.includes("Th") ? '<span class="circle"></span>' : "",
+                                        "Fri": time.days.includes("F") ? '<span class="circle"></span>' : "",
+                                        "Sat": time.days.includes("Sa") ? '<span class="circle"></span>' : "",
+                                        "Sun": time.days.includes("Su") ? '<span class="circle"></span>' : ""
+                                    };
+                                    $('#classTimes tbody').append(`
+                                        <tr>
+                                            <td>${classId}</td>
+                                            <td>${time.start_time} - ${time.end_time}</td>
+                                            <td>${days.Mon}</td>
+                                            <td>${days.Tue}</td>
+                                            <td>${days.Wed}</td>
+                                            <td>${days.Thu}</td>
+                                            <td>${days.Fri}</td>
+                                            <td>${days.Sat}</td>
+                                            <td>${days.Sun}</td>
+                                        </tr>
+                                    `);
                                 });
-                                $('#classTimes').append('</ul>');
                             });
                         }
                     });
