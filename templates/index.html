@@ -1,91 +1,101 @@
+<!-- templates/index.html -->
+
 <!doctype html>
 <html>
 <head>
-    <title>Available Classes</title>
+    <title>Class Scheduler</title>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <style>
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        th, td {
-            padding: 8px;
-            text-align: center;
-            border: 1px solid #ddd;
-        }
-        .circle {
-            height: 12px;
-            width: 12px;
-            background-color: black;
-            border-radius: 50%;
-            display: inline-block;
-        }
+        /* Your existing styles */
     </style>
     <script>
         $(document).ready(function() {
-            $('input[type="checkbox"]').change(function() {
-                let selectedClassIds = $('input[type="checkbox"]:checked').map(function() {
+            function updateSchedules() {
+                let selectedClassIds = $('input[name="classCheckbox"]:checked').map(function() {
                     return $(this).val();
                 }).get();
 
+                // Get personal schedule blocks
+                let personalSchedule = [];
+                $('.personal-block').each(function() {
+                    let days = $(this).find('.days').val();
+                    let startTime = $(this).find('.start-time').val();
+                    let endTime = $(this).find('.end-time').val();
+                    if (days && startTime && endTime) {
+                        personalSchedule.push({
+                            'days': days,
+                            'start_time': startTime,
+                            'end_time': endTime
+                        });
+                    }
+                });
+
                 if (selectedClassIds.length > 0) {
                     $.ajax({
-                        url: "/class_times",
+                        url: "/generate_schedules",
                         method: "POST",
                         contentType: "application/json",
-                        data: JSON.stringify({ class_ids: selectedClassIds }),
+                        data: JSON.stringify({
+                            'class_ids': selectedClassIds,
+                            'personal_schedule': personalSchedule
+                        }),
                         success: function(response) {
-                            $('#classTimes').empty().append(`
-                                <table>
-                                    <thead>
-                                        <tr>
-                                            <th>Class Name</th>
-                                            <th>Time</th>
-                                            <th>Mon</th>
-                                            <th>Tue</th>
-                                            <th>Wed</th>
-                                            <th>Thu</th>
-                                            <th>Fri</th>
-                                            <th>Sat</th>
-                                            <th>Sun</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody></tbody>
-                                </table>
-                            `);
-
-                            $.each(response, function(classId, times) {
-                                $.each(times, function(i, time) {
-                                    let days = {
-                                        "Mon": time.days.includes("M") ? '<span class="circle"></span>' : "",
-                                        "Tue": time.days.includes("Tu") ? '<span class="circle"></span>' : "",
-                                        "Wed": time.days.includes("W") ? '<span class="circle"></span>' : "",
-                                        "Thu": time.days.includes("Th") ? '<span class="circle"></span>' : "",
-                                        "Fri": time.days.includes("F") ? '<span class="circle"></span>' : "",
-                                        "Sat": time.days.includes("Sa") ? '<span class="circle"></span>' : "",
-                                        "Sun": time.days.includes("Su") ? '<span class="circle"></span>' : ""
-                                    };
-                                    $('#classTimes tbody').append(`
-                                        <tr>
-                                            <td>${classId}</td>
-                                            <td>${time.start_time} - ${time.end_time}</td>
-                                            <td>${days.Mon}</td>
-                                            <td>${days.Tue}</td>
-                                            <td>${days.Wed}</td>
-                                            <td>${days.Thu}</td>
-                                            <td>${days.Fri}</td>
-                                            <td>${days.Sat}</td>
-                                            <td>${days.Sun}</td>
-                                        </tr>
-                                    `);
+                            $('#schedules').empty();
+                            if (response.length > 0) {
+                                response.forEach(function(schedule, index) {
+                                    let scheduleHtml = `<h3>Schedule Option ${index + 1}</h3>`;
+                                    scheduleHtml += `<table>
+                                        <thead>
+                                            <tr>
+                                                <th>Class Name</th>
+                                                <th>Time</th>
+                                                <th>Days</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>`;
+                                    schedule.forEach(function(section) {
+                                        scheduleHtml += `<tr>
+                                            <td>${section.class_name}</td>
+                                            <td>${section.start_time} - ${section.end_time}</td>
+                                            <td>${section.days}</td>
+                                        </tr>`;
+                                    });
+                                    scheduleHtml += `</tbody></table>`;
+                                    $('#schedules').append(scheduleHtml);
                                 });
-                            });
+                            } else {
+                                $('#schedules').append('<p>No valid schedules found.</p>');
+                            }
                         }
                     });
                 } else {
-                    $('#classTimes').empty();
+                    $('#schedules').empty();
                 }
+            }
+
+            // Event listeners
+            $('input[name="classCheckbox"]').change(updateSchedules);
+
+            // Add personal schedule block
+            $('#addPersonalBlock').click(function() {
+                $('#personalSchedule').append(`
+                    <div class="personal-block">
+                        <label>Days: <input type="text" class="days" placeholder="e.g., MTuWThF"></label>
+                        <label>Start Time: <input type="text" class="start-time" placeholder="e.g., 0900"></label>
+                        <label>End Time: <input type="text" class="end-time" placeholder="e.g., 1000"></label>
+                        <button type="button" class="remove-block">Remove</button>
+                    </div>
+                `);
             });
+
+            // Remove personal schedule block
+            $(document).on('click', '.remove-block', function() {
+                $(this).parent('.personal-block').remove();
+                updateSchedules();
+            });
+
+            // Update schedules when personal schedule changes
+            $(document).on('change', '.personal-block input', updateSchedules);
         });
     </script>
 </head>
@@ -94,11 +104,20 @@
     <form id="classForm">
         {% for class in classes %}
             <div>
-                <input type="checkbox" id="class{{ class['id'] }}" value="{{ class['id'] }}">
+                <input type="checkbox" name="classCheckbox" id="class{{ class['id'] }}" value="{{ class['id'] }}">
                 <label for="class{{ class['id'] }}">{{ class['class_id'] }}</label>
             </div>
         {% endfor %}
     </form>
-    <div id="classTimes"></div>
+
+    <h2>Personal Schedule Blocks</h2>
+    <div id="personalSchedule">
+        <!-- Personal schedule blocks will be added here -->
+    </div>
+    <button type="button" id="addPersonalBlock">Add Personal Schedule Block</button>
+
+    <div id="schedules">
+        <!-- Generated schedules will be displayed here -->
+    </div>
 </body>
 </html>

@@ -1,40 +1,51 @@
+# app.py
+
 from flask import Flask, render_template, request, jsonify
-import sqlite3
 import os
+import scheduler  # Import the scheduler module
 
 app = Flask(__name__)
-
-# Database connection function with a relative path
-def get_db_connection():
-    db_path = os.path.join(os.path.dirname(__file__), 'class_schedule.db')
-    conn = sqlite3.connect(db_path)
-    conn.row_factory = sqlite3.Row
-    return conn
 
 # Route to display available classes
 @app.route('/')
 def index():
-    conn = get_db_connection()
+    conn = scheduler.get_db_connection()
     classes = conn.execute('SELECT * FROM class_offered').fetchall()
     conn.close()
     return render_template('index.html', classes=classes)
 
-# Route to fetch selected class time slots dynamically
-@app.route('/class_times', methods=['POST'])
-def get_class_times():
-    class_ids = request.json.get('class_ids', [])
-    conn = get_db_connection()
-    all_times = {}
-    for class_id in class_ids:
-        times = conn.execute(
-            'SELECT start_time, end_time, days FROM class_times WHERE class_offered_id = ?',
-            (class_id,)
-        ).fetchall()
-        all_times[class_id] = [{'start_time': t['start_time'], 'end_time': t['end_time'], 'days': t['days']} for t in times]
-    conn.close()
-    return jsonify(all_times)
+# Route to fetch possible schedules dynamically
+@app.route('/generate_schedules', methods=['POST'])
+def generate_schedules():
+    data = request.json
+    class_ids = data.get('class_ids', [])
+    personal_schedule = data.get('personal_schedule', [])
+
+    # Fetch classes and their sections
+    classes = scheduler.fetch_classes(class_ids)
+
+    # Create personal bitset
+    personal_bitset = scheduler.create_personal_bitset(personal_schedule)
+
+    # Generate valid schedules
+    valid_schedules = scheduler.generate_schedules(classes, personal_bitset)
+
+    # Prepare the response data
+    schedules_data = []
+    for schedule in valid_schedules:
+        schedule_info = []
+        for section in schedule:
+            schedule_info.append({
+                'class_id': section['class_id'],
+                'class_name': section['class_name'],
+                'start_time': section['start_time'],
+                'end_time': section['end_time'],
+                'days': section['days']
+            })
+        schedules_data.append(schedule_info)
+
+    return jsonify(schedules_data)
 
 if __name__ == '__main__':
     app.debug = True
-    # use port 5000
     app.run(port=5000)
