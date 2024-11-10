@@ -45,7 +45,7 @@ def generate_schedules():
                 'end_time': section['end_time'],
                 'days': section['days']
             })
-        # Add the matrix and class_ids to the schedule data
+        # Add the matrix to the schedule data
         schedules_data.append({
             'sections': schedule_info,
             'matrix': schedule['matrix']

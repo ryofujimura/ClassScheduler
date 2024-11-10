@@ -95,12 +95,15 @@ def create_bitset(start_time_str, end_time_str, days_str):
     days = parse_days(days_str)
 
     for day in days:
-        day_offset = DAYS.index(day) * TOTAL_TIME_SLOTS
+        if day not in DAYS:
+            print(f"Invalid day '{day}' encountered. Skipping.")
+            continue
+        day_index = DAYS.index(day)  # Correctly define day_index
         for minute in range(start_time, end_time, TIME_INCREMENT):
             time_slot = ((minute - START_TIME) // TIME_INCREMENT)
             if time_slot < 0 or time_slot >= TOTAL_TIME_SLOTS:
                 continue  # Skip times outside the schedule range
-            bit_position = day_offset + time_slot
+            bit_position = day_index * TOTAL_TIME_SLOTS + time_slot
             bitset |= 1 << bit_position
     return bitset
 
@@ -112,29 +115,77 @@ def create_bitset_minutes(start_time, end_time, days_str):
     days = parse_days(days_str)
 
     for day in days:
-        day_offset = DAYS.index(day) * TOTAL_TIME_SLOTS
+        if day not in DAYS:
+            print(f"Invalid day '{day}' encountered in personal schedule. Skipping.")
+            continue
+        day_index = DAYS.index(day)  # Ensure day_index is defined
         for minute in range(start_time, end_time, TIME_INCREMENT):
             time_slot = ((minute - START_TIME) // TIME_INCREMENT)
             if time_slot < 0 or time_slot >= TOTAL_TIME_SLOTS:
                 continue  # Skip times outside the schedule range
-            bit_position = day_offset + time_slot
+            bit_position = day_index * TOTAL_TIME_SLOTS + time_slot
             bitset |= 1 << bit_position
     return bitset
 
 def parse_days(days_str):
     """
     Parse the days string into a list of days.
+    Supports both one-letter and two-letter day abbreviations.
     """
+    two_letter_days = ['Tu', 'Th', 'Su', 'Sa']  # Added 'Sa' for Saturday
     days = []
     i = 0
     while i < len(days_str):
-        if days_str[i:i+2] in ['Tu', 'Th', 'Su']:
-            days.append(days_str[i:i+2])
-            i += 2
+        # Check for two-letter day abbreviations
+        if any(days_str.startswith(day, i) for day in two_letter_days):
+            for day in two_letter_days:
+                if days_str.startswith(day, i):
+                    days.append(day)
+                    i += len(day)
+                    break
         else:
+            # Assume one-letter day abbreviations
             days.append(days_str[i])
             i += 1
     return days
+
+def create_time_slot_class_for_personal(personal_schedule):
+    """
+    Create a mapping of time slots to personal schedule blocks.
+    """
+    time_slot_class = {}
+    for block in personal_schedule:
+        start_time = time_str_to_minutes(block['start_time'])
+        end_time = time_str_to_minutes(block['end_time'])
+        days = parse_days(block['days'])
+        for day in days:
+            if day not in DAYS:
+                print(f"Invalid day '{day}' in personal schedule. Skipping.")
+                continue
+            day_index = DAYS.index(day)
+            for minute in range(start_time, end_time, TIME_INCREMENT):
+                time_slot = ((minute - START_TIME) // TIME_INCREMENT)
+                if time_slot < 0 or time_slot >= TOTAL_TIME_SLOTS:
+                    continue
+                bit_position = day_index * TOTAL_TIME_SLOTS + time_slot
+                time_slot_class[bit_position] = {
+                    'class_name': 'Personal Time',
+                    'start_time': block['start_time'],
+                    'end_time': block['end_time']
+                }
+    return time_slot_class
+
+def create_personal_bitset(personal_schedule):
+    """
+    Create a bitset representing the user's personal schedule blocks.
+    personal_schedule is a list of dicts with 'start_time', 'end_time', and 'days'.
+    """
+    bitset = 0
+    for block in personal_schedule:
+        start_time = time_str_to_minutes(block['start_time'])
+        end_time = time_str_to_minutes(block['end_time'])
+        bitset |= create_bitset_minutes(start_time, end_time, block['days'])
+    return bitset
 
 def generate_schedules(classes, personal_bitset, personal_schedule):
     """
@@ -170,6 +221,9 @@ def generate_schedules(classes, personal_bitset, personal_schedule):
                 end_time = time_str_to_minutes(section['end_time'])
                 days = parse_days(section['days'])
                 for day in days:
+                    if day not in DAYS:
+                        print(f"Invalid day '{day}' in class section. Skipping.")
+                        continue
                     day_index = DAYS.index(day)
                     for minute in range(start_time, end_time, TIME_INCREMENT):
                         time_slot = ((minute - START_TIME) // TIME_INCREMENT)
@@ -203,41 +257,5 @@ def bitset_to_matrix_with_classes(time_slot_class):
     for bit_position, class_info in time_slot_class.items():
         day_index = bit_position // TOTAL_TIME_SLOTS
         time_slot = bit_position % TOTAL_TIME_SLOTS
-        # Store class info (name and times)
         matrix[time_slot][day_index] = class_info
     return matrix
-
-def create_personal_bitset(personal_schedule):
-    """
-    Create a bitset representing the user's personal schedule blocks.
-    personal_schedule is a list of dicts with 'start_time', 'end_time', and 'days'.
-    """
-    bitset = 0
-    for block in personal_schedule:
-        start_time = time_str_to_minutes(block['start_time'])
-        end_time = time_str_to_minutes(block['end_time'])
-        bitset |= create_bitset_minutes(start_time, end_time, block['days'])
-    return bitset
-
-def create_time_slot_class_for_personal(personal_schedule):
-    """
-    Create a mapping of time slots to personal schedule blocks.
-    """
-    time_slot_class = {}
-    for block in personal_schedule:
-        start_time = time_str_to_minutes(block['start_time'])
-        end_time = time_str_to_minutes(block['end_time'])
-        days = parse_days(block['days'])
-        for day in days:
-            day_index = DAYS.index(day)
-            for minute in range(start_time, end_time, TIME_INCREMENT):
-                time_slot = ((minute - START_TIME) // TIME_INCREMENT)
-                if time_slot < 0 or time_slot >= TOTAL_TIME_SLOTS:
-                    continue
-                bit_position = day_index * TOTAL_TIME_SLOTS + time_slot
-                time_slot_class[bit_position] = {
-                    'class_name': 'Personal Time',
-                    'start_time': block['start_time'],
-                    'end_time': block['end_time']
-                }
-    return time_slot_class

@@ -43,33 +43,92 @@
         .class-selection {
             display: flex;
             flex-wrap: wrap;
+            max-height: 400px; /* Set a max height with scroll */
+            overflow-y: auto;
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-bottom: 20px;
         }
 
         .class-selection div {
+            width: 200px; /* Adjust width as needed */
             margin-right: 15px;
+            margin-bottom: 10px;
+        }
+
+        /* Search bar styles */
+        #searchBar {
+            width: 100%;
+            max-width: 400px;
+            padding: 8px 12px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
         }
 
         /* Personal schedule block styles */
         #personalSchedule {
             margin-bottom: 20px;
+            border: 1px solid #ccc;
+            padding: 15px;
+            border-radius: 4px;
         }
 
         .personal-block {
+            margin-bottom: 15px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: #f9f9f9;
+        }
+
+        .personal-block .days-container {
             margin-bottom: 10px;
         }
 
         .personal-block label {
             margin-right: 10px;
+            display: inline-block;
+            margin-bottom: 5px;
         }
 
         .remove-block {
-            margin-left: 10px;
+            margin-top: 10px;
+            background-color: #e74c3c;
+            color: #fff;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+
+        .remove-block:hover {
+            background-color: #c0392b;
         }
 
         /* Conflict class label */
         .conflict {
             color: red;
             font-weight: bold;
+        }
+
+        /* Scrollbar styling for class selection */
+        .class-selection::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .class-selection::-webkit-scrollbar-track {
+            background: #f1f1f1; 
+        }
+
+        .class-selection::-webkit-scrollbar-thumb {
+            background: #888; 
+            border-radius: 4px;
+        }
+
+        .class-selection::-webkit-scrollbar-thumb:hover {
+            background: #555; 
         }
     </style>
     <script>
@@ -84,20 +143,25 @@
                 // Get personal schedule blocks
                 let personalSchedule = [];
                 $('.personal-block').each(function() {
-                    let days = $(this).find('.days').val();
+                    // Collect selected days from checkboxes
+                    let selectedDays = [];
+                    $(this).find('input[name="daysCheckbox"]:checked').each(function() {
+                        selectedDays.push($(this).val());
+                    });
+
                     let startTime = $(this).find('.start-time').val();
                     let endTime = $(this).find('.end-time').val();
 
                     if (startTime && endTime && (!isValidTime(startTime) || !isValidTime(endTime))) {
-                        alert('Please enter start and end times in HHMM format (e.g., 0900).');
+                        alert('Please enter valid start and end times.');
                         return false;
                     }
 
-                    if (days && startTime && endTime) {
+                    if (selectedDays.length > 0 && startTime && endTime) {
                         personalSchedule.push({
-                            'days': days,
-                            'start_time': startTime,
-                            'end_time': endTime
+                            'days': selectedDays.join(''),
+                            'start_time': startTime.replace(':', ''),
+                            'end_time': endTime.replace(':', '')
                         });
                     }
                 });
@@ -260,9 +324,9 @@
                 return tableHtml;
             }
 
-            // Validate time format (HHMM)
+            // Validate time format (HH:MM)
             function isValidTime(timeStr) {
-                return /^\d{4}$/.test(timeStr) && parseInt(timeStr.substr(0,2)) < 24 && parseInt(timeStr.substr(2,2)) < 60;
+                return /^([0-1]\d|2[0-3]):([0-5]\d)$/.test(timeStr);
             }
 
             // Format time from "HHMM" to "HH:MM"
@@ -273,6 +337,19 @@
                 return `${hours}:${minutes}`;
             }
 
+            // Function to filter classes based on search input
+            function filterClasses(query) {
+                query = query.toLowerCase();
+                $('.class-selection div').each(function() {
+                    let label = $(this).find('label').text().toLowerCase();
+                    if (label.includes(query)) {
+                        $(this).show();
+                    } else {
+                        $(this).hide();
+                    }
+                });
+            }
+
             // Event listeners
             $('input[name="classCheckbox"]').change(updateSchedules);
 
@@ -280,9 +357,24 @@
             $('#addPersonalBlock').click(function() {
                 $('#personalSchedule').append(`
                     <div class="personal-block">
-                        <label>Days: <input type="text" class="days" placeholder="e.g., MTuWThF"></label>
-                        <label>Start Time: <input type="text" class="start-time" placeholder="e.g., 0900" pattern="\\d{4}"></label>
-                        <label>End Time: <input type="text" class="end-time" placeholder="e.g., 1000" pattern="\\d{4}"></label>
+                        <div class="days-container">
+                            <label>Days:</label>
+                            <label><input type="checkbox" name="daysCheckbox" value="M"> M</label>
+                            <label><input type="checkbox" name="daysCheckbox" value="Tu"> Tu</label>
+                            <label><input type="checkbox" name="daysCheckbox" value="W"> W</label>
+                            <label><input type="checkbox" name="daysCheckbox" value="Th"> Th</label>
+                            <label><input type="checkbox" name="daysCheckbox" value="F"> F</label>
+                            <label><input type="checkbox" name="daysCheckbox" value="Sa"> Sa</label>
+                            <label><input type="checkbox" name="daysCheckbox" value="Su"> Su</label>
+                        </div>
+                        <div class="time-container">
+                            <label>Start Time:
+                                <input type="time" class="start-time" required>
+                            </label>
+                            <label>End Time:
+                                <input type="time" class="end-time" required>
+                            </label>
+                        </div>
                         <button type="button" class="remove-block">Remove</button>
                     </div>
                 `);
@@ -296,11 +388,22 @@
 
             // Update schedules when personal schedule changes
             $(document).on('change', '.personal-block input', updateSchedules);
+
+            // Add event listener for the search bar
+            $('#searchBar').on('input', function() {
+                let query = $(this).val();
+                filterClasses(query);
+            });
         });
     </script>
 </head>
 <body>
     <h1>Select Available Classes</h1>
+
+    <!-- Search Bar -->
+    <input type="text" id="searchBar" placeholder="Search for classes..." />
+
+    <!-- Class Selection List -->
     <div class="class-selection">
         {% for class in classes %}
             <div>
