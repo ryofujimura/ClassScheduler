@@ -4,7 +4,7 @@ import sqlite3
 import os
 from itertools import product
 
-# Constants for time representation
+# Constants
 DAYS = ['M', 'Tu', 'W', 'Th', 'F', 'Sa', 'Su']
 START_TIME = 8 * 60    # 8:00 AM in minutes
 END_TIME = 22 * 60     # 10:00 PM in minutes
@@ -16,6 +16,19 @@ def get_db_connection():
     conn = sqlite3.connect(db_path)
     conn.row_factory = sqlite3.Row
     return conn
+
+def time_str_to_minutes(time_str):
+    """
+    Convert military time string or integer (e.g., "0900" or 900) to minutes since midnight.
+    """
+    try:
+        time_str = str(time_str).zfill(4)  # Ensure it's a 4-character string with leading zeros
+        hours = int(time_str[:-2])
+        minutes = int(time_str[-2:])
+        return hours * 60 + minutes
+    except Exception as e:
+        print(f"Error converting time_str '{time_str}' to minutes: {e}")
+        raise
 
 def fetch_classes(class_ids):
     """
@@ -32,6 +45,9 @@ def fetch_classes(class_ids):
             'SELECT class_id FROM class_offered WHERE id = ?',
             (class_id,)
         ).fetchone()
+        if not class_info:
+            print(f"No class found with id {class_id}")
+            continue
         class_name = class_info['class_id']
 
         # Fetch class times
@@ -42,16 +58,28 @@ def fetch_classes(class_ids):
 
         sections = []
         for time in times:
-            section = {
-                'class_id': class_id,
-                'class_name': class_name,
-                'start_time': time['start_time'],
-                'end_time': time['end_time'],
-                'days': time['days'],
-                'bitset': create_bitset(time['start_time'], time['end_time'], time['days'])
-            }
-            sections.append(section)
-        classes[class_id] = sections
+            # Check for missing or invalid data
+            if not time['start_time'] or not time['end_time'] or not time['days']:
+                print(f"Invalid time data for class {class_name}: {time}")
+                continue
+            try:
+                bitset = create_bitset(time['start_time'], time['end_time'], time['days'])
+                section = {
+                    'class_id': class_id,
+                    'class_name': class_name,
+                    'start_time': time['start_time'],
+                    'end_time': time['end_time'],
+                    'days': time['days'],
+                    'bitset': bitset
+                }
+                sections.append(section)
+            except Exception as e:
+                print(f"Error creating bitset for class {class_name}: {e}")
+                continue
+        if sections:
+            classes[class_id] = sections
+        else:
+            print(f"No valid sections found for class {class_name}")
 
     conn.close()
     return classes
@@ -60,15 +88,35 @@ def create_bitset(start_time_str, end_time_str, days_str):
     """
     Create a bitset representing the class time slots.
     """
+    print(f"Creating bitset for: start_time={start_time_str}, end_time={end_time_str}, days={days_str}")  # Debug statement
     bitset = 0
-    start_time = int(start_time_str)
-    end_time = int(end_time_str)
+    start_time = time_str_to_minutes(start_time_str)  # Convert to minutes since midnight
+    end_time = time_str_to_minutes(end_time_str)
     days = parse_days(days_str)
 
     for day in days:
         day_offset = DAYS.index(day) * TOTAL_TIME_SLOTS
         for minute in range(start_time, end_time, TIME_INCREMENT):
             time_slot = ((minute - START_TIME) // TIME_INCREMENT)
+            if time_slot < 0 or time_slot >= TOTAL_TIME_SLOTS:
+                continue  # Skip times outside the schedule range
+            bit_position = day_offset + time_slot
+            bitset |= 1 << bit_position
+    return bitset
+
+def create_bitset_minutes(start_time, end_time, days_str):
+    """
+    Create a bitset using times already converted to minutes since midnight.
+    """
+    bitset = 0
+    days = parse_days(days_str)
+
+    for day in days:
+        day_offset = DAYS.index(day) * TOTAL_TIME_SLOTS
+        for minute in range(start_time, end_time, TIME_INCREMENT):
+            time_slot = ((minute - START_TIME) // TIME_INCREMENT)
+            if time_slot < 0 or time_slot >= TOTAL_TIME_SLOTS:
+                continue  # Skip times outside the schedule range
             bit_position = day_offset + time_slot
             bitset |= 1 << bit_position
     return bitset
@@ -88,7 +136,7 @@ def parse_days(days_str):
             i += 1
     return days
 
-def generate_schedules(classes, personal_bitset):
+def generate_schedules(classes, personal_bitset, personal_schedule):
     """
     Generate all possible schedules without time conflicts.
     """
@@ -97,13 +145,16 @@ def generate_schedules(classes, personal_bitset):
 
     # Generate all combinations of class sections
     all_combinations = list(product(*class_sections))
+    print(f"Total combinations: {len(all_combinations)}")  # Debug statement
 
     valid_schedules = []
 
-    schedule_number = 1  # Counter for schedule numbering
+    # Create time_slot_class mapping for personal schedule blocks
+    personal_time_slot_class = create_time_slot_class_for_personal(personal_schedule)
 
     for combination in all_combinations:
         total_bitset = personal_bitset
+        time_slot_class = {}  # Map time slots to class details (name and time)
         conflict = False
         for section in combination:
             # Check for conflict
@@ -111,16 +162,50 @@ def generate_schedules(classes, personal_bitset):
                 conflict = True
                 break
             else:
-                total_bitset |= section['bitset']
+                # Update the bitset and time_slot_class mapping
+                section_bitset = section['bitset']
+                total_bitset |= section_bitset
+                # Get start and end times in minutes
+                start_time = time_str_to_minutes(section['start_time'])
+                end_time = time_str_to_minutes(section['end_time'])
+                days = parse_days(section['days'])
+                for day in days:
+                    day_index = DAYS.index(day)
+                    for minute in range(start_time, end_time, TIME_INCREMENT):
+                        time_slot = ((minute - START_TIME) // TIME_INCREMENT)
+                        if time_slot < 0 or time_slot >= TOTAL_TIME_SLOTS:
+                            continue  # Skip times outside the schedule range
+                        bit_position = day_index * TOTAL_TIME_SLOTS + time_slot
+                        time_slot_class[bit_position] = {
+                            'class_name': section['class_name'],
+                            'start_time': section['start_time'],
+                            'end_time': section['end_time']
+                        }
         if not conflict:
-            # Add valid schedule
-            valid_schedules.append(combination)
-            # Print the matrix representation of the schedule
-            print(f"\nSchedule Option {schedule_number}:")
-            print_schedule_matrix(total_bitset)
-            schedule_number += 1
+            # Merge time_slot_class with personal_time_slot_class
+            combined_time_slot_class = {**time_slot_class, **personal_time_slot_class}
+            # Convert the combined_time_slot_class mapping into a matrix with class titles and times
+            schedule_matrix = bitset_to_matrix_with_classes(combined_time_slot_class)
+            valid_schedules.append({
+                'sections': combination,
+                'matrix': schedule_matrix
+            })
+
+    print(f"Total valid schedules: {len(valid_schedules)}")  # Debug statement
 
     return valid_schedules
+
+def bitset_to_matrix_with_classes(time_slot_class):
+    """
+    Convert the time_slot_class mapping into a 2D list (matrix) with class titles and times.
+    """
+    matrix = [['' for _ in DAYS] for _ in range(TOTAL_TIME_SLOTS)]
+    for bit_position, class_info in time_slot_class.items():
+        day_index = bit_position // TOTAL_TIME_SLOTS
+        time_slot = bit_position % TOTAL_TIME_SLOTS
+        # Store class info (name and times)
+        matrix[time_slot][day_index] = class_info
+    return matrix
 
 def create_personal_bitset(personal_schedule):
     """
@@ -129,28 +214,30 @@ def create_personal_bitset(personal_schedule):
     """
     bitset = 0
     for block in personal_schedule:
-        bitset |= create_bitset(block['start_time'], block['end_time'], block['days'])
+        start_time = time_str_to_minutes(block['start_time'])
+        end_time = time_str_to_minutes(block['end_time'])
+        bitset |= create_bitset_minutes(start_time, end_time, block['days'])
     return bitset
 
-def print_schedule_matrix(bitset):
+def create_time_slot_class_for_personal(personal_schedule):
     """
-    Convert the bitset back into a 2D matrix and print it.
+    Create a mapping of time slots to personal schedule blocks.
     """
-    # Initialize the matrix
-    matrix = [[' ' for _ in DAYS] for _ in range(TOTAL_TIME_SLOTS)]
-    for day_index, day in enumerate(DAYS):
-        for time_slot in range(TOTAL_TIME_SLOTS):
-            bit_position = day_index * TOTAL_TIME_SLOTS + time_slot
-            if bitset & (1 << bit_position):
-                matrix[time_slot][day_index] = 'X'
-
-    # Print the matrix with time labels
-    print("Time\t\t" + "\t".join(DAYS))
-    for time_slot in range(TOTAL_TIME_SLOTS):
-        # Calculate the actual time
-        minutes = START_TIME + time_slot * TIME_INCREMENT
-        hours = minutes // 60
-        mins = minutes % 60
-        time_label = f"{hours:02d}:{mins:02d}"
-        row = matrix[time_slot]
-        print(f"{time_label}\t" + "\t".join(row))
+    time_slot_class = {}
+    for block in personal_schedule:
+        start_time = time_str_to_minutes(block['start_time'])
+        end_time = time_str_to_minutes(block['end_time'])
+        days = parse_days(block['days'])
+        for day in days:
+            day_index = DAYS.index(day)
+            for minute in range(start_time, end_time, TIME_INCREMENT):
+                time_slot = ((minute - START_TIME) // TIME_INCREMENT)
+                if time_slot < 0 or time_slot >= TOTAL_TIME_SLOTS:
+                    continue
+                bit_position = day_index * TOTAL_TIME_SLOTS + time_slot
+                time_slot_class[bit_position] = {
+                    'class_name': 'Personal Time',
+                    'start_time': block['start_time'],
+                    'end_time': block['end_time']
+                }
+    return time_slot_class

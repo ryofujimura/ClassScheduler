@@ -6,7 +6,71 @@
     <title>Class Scheduler</title>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <style>
-        /* Your existing styles */
+        /* Existing styles */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        h1, h2, h3 {
+            color: #333;
+        }
+
+        /* Schedule Table Styles */
+        .schedule-table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-bottom: 30px;
+        }
+
+        .schedule-table th, .schedule-table td {
+            border: 1px solid #ddd;
+            padding: 5px;
+            text-align: center;
+            width: 12.5%; /* Adjusted for 8 columns including Time */
+            height: 60px; /* Increased height */
+            font-size: 12px;
+            overflow: hidden;
+            white-space: normal; /* Allow text to wrap */
+            word-wrap: break-word; /* Break long words */
+        }
+
+        .schedule-table th {
+            background-color: #f2f2f2;
+        }
+
+        /* Class selection styles */
+        .class-selection {
+            display: flex;
+            flex-wrap: wrap;
+        }
+
+        .class-selection div {
+            margin-right: 15px;
+        }
+
+        /* Personal schedule block styles */
+        #personalSchedule {
+            margin-bottom: 20px;
+        }
+
+        .personal-block {
+            margin-bottom: 10px;
+        }
+
+        .personal-block label {
+            margin-right: 10px;
+        }
+
+        .remove-block {
+            margin-left: 10px;
+        }
+
+        /* Conflict class label */
+        .conflict {
+            color: red;
+            font-weight: bold;
+        }
     </style>
     <script>
         $(document).ready(function() {
@@ -15,12 +79,20 @@
                     return $(this).val();
                 }).get();
 
+                console.log('Selected Class IDs:', selectedClassIds);
+
                 // Get personal schedule blocks
                 let personalSchedule = [];
                 $('.personal-block').each(function() {
                     let days = $(this).find('.days').val();
                     let startTime = $(this).find('.start-time').val();
                     let endTime = $(this).find('.end-time').val();
+
+                    if (startTime && endTime && (!isValidTime(startTime) || !isValidTime(endTime))) {
+                        alert('Please enter start and end times in HHMM format (e.g., 0900).');
+                        return false;
+                    }
+
                     if (days && startTime && endTime) {
                         personalSchedule.push({
                             'days': days,
@@ -29,6 +101,8 @@
                         });
                     }
                 });
+
+                console.log('Personal Schedule:', personalSchedule);
 
                 if (selectedClassIds.length > 0) {
                     $.ajax({
@@ -40,10 +114,44 @@
                             'personal_schedule': personalSchedule
                         }),
                         success: function(response) {
+                            console.log('AJAX Success. Response:', response);
                             $('#schedules').empty();
+
                             if (response.length > 0) {
+                                // Create a set to hold unique class names
+                                let classNamesSet = new Set();
+
+                                // Collect all class names from the schedules
+                                response.forEach(function(schedule) {
+                                    schedule.sections.forEach(function(section) {
+                                        classNamesSet.add(section.class_name);
+                                    });
+                                });
+
+                                // Convert the set to an array for indexing
+                                const classNamesArray = Array.from(classNamesSet);
+
+                                // Generate pastel colors
+                                const pastelColors = generatePastelColors(classNamesArray.length + 1); // +1 for 'Personal Time'
+
+                                // Create a color mapping for class names
+                                let colorMapping = {};
+
+                                classNamesArray.forEach(function(className, index) {
+                                    colorMapping[className] = pastelColors[index];
+                                });
+
+                                // Assign the last color to 'Personal Time'
+                                colorMapping['Personal Time'] = pastelColors[classNamesArray.length];
+
+                                // Render each schedule
                                 response.forEach(function(schedule, index) {
                                     let scheduleHtml = `<h3>Schedule Option ${index + 1}</h3>`;
+
+                                    // Render the schedule table with color mapping
+                                    scheduleHtml += renderScheduleTable(schedule.matrix, colorMapping);
+
+                                    // Display the class sections
                                     scheduleHtml += `<table>
                                         <thead>
                                             <tr>
@@ -53,10 +161,10 @@
                                             </tr>
                                         </thead>
                                         <tbody>`;
-                                    schedule.forEach(function(section) {
+                                    schedule.sections.forEach(function(section) {
                                         scheduleHtml += `<tr>
                                             <td>${section.class_name}</td>
-                                            <td>${section.start_time} - ${section.end_time}</td>
+                                            <td>${formatTime(section.start_time)} - ${formatTime(section.end_time)}</td>
                                             <td>${section.days}</td>
                                         </tr>`;
                                     });
@@ -66,11 +174,103 @@
                             } else {
                                 $('#schedules').append('<p>No valid schedules found.</p>');
                             }
+                        },
+                        error: function(jqXHR, textStatus, errorThrown) {
+                            console.log('AJAX Error:', textStatus, errorThrown);
                         }
                     });
                 } else {
                     $('#schedules').empty();
                 }
+            }
+
+            // Function to generate pastel colors
+            function generatePastelColors(numColors) {
+                const colors = [];
+                const saturation = 70; // Adjust for desired pastel intensity
+                const lightness = 85;  // Adjust for desired brightness
+                const hueStep = 360 / numColors;
+
+                for (let i = 0; i < numColors; i++) {
+                    const hue = (i * hueStep) % 360;
+                    colors.push(`hsl(${hue}, ${saturation}%, ${lightness}%)`);
+                }
+                return colors;
+            }
+
+            // Function to render the schedule table
+            function renderScheduleTable(matrix, colorMapping) {
+                // Define days and time slots
+                const days = ['M', 'Tu', 'W', 'Th', 'F', 'Sa', 'Su'];
+                const startTime = 8 * 60; // 8:00 AM in minutes
+                const endTime = 22 * 60;  // 10:00 PM in minutes
+                const timeIncrement = 30; // 30-minute increments
+
+                // Generate time labels
+                let timeLabels = [];
+                for (let minutes = startTime; minutes < endTime; minutes += timeIncrement) {
+                    let hours = Math.floor(minutes / 60);
+                    let mins = minutes % 60;
+                    let timeLabel = `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
+                    timeLabels.push(timeLabel);
+                }
+
+                // Build the table
+                let tableHtml = `<table class="schedule-table"><thead><tr><th>Time</th>`;
+                days.forEach(day => {
+                    tableHtml += `<th>${day}</th>`;
+                });
+                tableHtml += `</tr></thead><tbody>`;
+
+                // Calculate total time slots based on the increment
+                const totalTimeSlots = (endTime - startTime) / timeIncrement;
+
+                // Build table rows
+                for (let i = 0; i < totalTimeSlots; i++) {
+                    tableHtml += `<tr><td>${timeLabels[i]}</td>`;
+                    for (let j = 0; j < days.length; j++) {
+                        let cellContent = '';
+                        let cellStyle = '';
+                        let matrixIndex = i * (30 / 5); // Adjust index for 30-minute increments
+                        let classInfos = [];
+                        // Loop through the corresponding 5-minute slots
+                        for (let k = 0; k < (30 / 5); k++) {
+                            let idx = Math.floor(matrixIndex + k);
+                            if (matrix[idx] && matrix[idx][j]) {
+                                let classInfo = matrix[idx][j];
+                                if (!classInfos.some(ci => ci.class_name === classInfo.class_name)) {
+                                    classInfos.push(classInfo);
+                                }
+                            }
+                        }
+                        if (classInfos.length > 0) {
+                            cellContent = classInfos.map(ci => {
+                                return `${ci.class_name}<br>${formatTime(ci.start_time)} - ${formatTime(ci.end_time)}`;
+                            }).join('<hr>');
+                            // Get the color for the class
+                            let classColor = colorMapping[classInfos[0].class_name] || '#8ac6d1'; // Default color if not found
+                            cellStyle = `background-color: ${classColor}; color: #000;`;
+                        }
+                        tableHtml += `<td style="${cellStyle}">${cellContent}</td>`;
+                    }
+                    tableHtml += `</tr>`;
+                }
+
+                tableHtml += `</tbody></table>`;
+                return tableHtml;
+            }
+
+            // Validate time format (HHMM)
+            function isValidTime(timeStr) {
+                return /^\d{4}$/.test(timeStr) && parseInt(timeStr.substr(0,2)) < 24 && parseInt(timeStr.substr(2,2)) < 60;
+            }
+
+            // Format time from "HHMM" to "HH:MM"
+            function formatTime(timeStr) {
+                let timeStrPadded = timeStr.toString().padStart(4, '0');
+                let hours = timeStrPadded.substr(0, 2);
+                let minutes = timeStrPadded.substr(2, 2);
+                return `${hours}:${minutes}`;
             }
 
             // Event listeners
@@ -81,8 +281,8 @@
                 $('#personalSchedule').append(`
                     <div class="personal-block">
                         <label>Days: <input type="text" class="days" placeholder="e.g., MTuWThF"></label>
-                        <label>Start Time: <input type="text" class="start-time" placeholder="e.g., 0900"></label>
-                        <label>End Time: <input type="text" class="end-time" placeholder="e.g., 1000"></label>
+                        <label>Start Time: <input type="text" class="start-time" placeholder="e.g., 0900" pattern="\\d{4}"></label>
+                        <label>End Time: <input type="text" class="end-time" placeholder="e.g., 1000" pattern="\\d{4}"></label>
                         <button type="button" class="remove-block">Remove</button>
                     </div>
                 `);
@@ -101,14 +301,14 @@
 </head>
 <body>
     <h1>Select Available Classes</h1>
-    <form id="classForm">
+    <div class="class-selection">
         {% for class in classes %}
             <div>
                 <input type="checkbox" name="classCheckbox" id="class{{ class['id'] }}" value="{{ class['id'] }}">
-                <label for="class{{ class['id'] }}">{{ class['class_id'] }}</label>
+                <label for="class{{ class['id'] }}" class="class-label">{{ class['class_id'] }}</label>
             </div>
         {% endfor %}
-    </form>
+    </div>
 
     <h2>Personal Schedule Blocks</h2>
     <div id="personalSchedule">
