@@ -13,18 +13,18 @@ def index():
     try:
         import csv
         import tempfile
-        
+
         # Create a temporary file
         with tempfile.NamedTemporaryFile(mode='w+', delete=False, suffix='.csv') as temp_file:
             url = "https://web.csulb.edu/depts/enrollment/registration/class_schedule/Summer_2025/By_Subject/CECS.html"
             from classscrape import scrape_cecs_schedule
             scrape_cecs_schedule(url, temp_file.name)
-            
+
             # Read the temporary file
             temp_file.seek(0)
             reader = csv.DictReader(temp_file)
             classes = list(reader)
-        
+
         return render_template('index.html', classes=classes)
     except Exception as e:
         return render_template('index.html', classes=[], error=str(e))
@@ -39,11 +39,6 @@ def generate_schedules():
     personal_schedule = data.get('personal_schedule', [])
     time_increment = data.get('time_increment', 30)  # Default to 30 if not provided
 
-    # print(f"Data received from client: {data}")
-    # print(f"Class IDs: {class_ids}")
-    # print(f"Personal Schedule: {personal_schedule}")
-    # print(f"Time Increment: {time_increment}")
-
     # Ensure time_increment is an integer and valid
     try:
         time_increment = int(time_increment)
@@ -53,7 +48,7 @@ def generate_schedules():
         print(f"Invalid time_increment: {ve}")
         return jsonify({"error": "Invalid time increment selected. Please choose 15, 30, 60, or 120 minutes."}), 400
 
-    # Fetch classes and their sections
+    # Fetch classes and their sections -  This will need significant changes in scheduler.py
     classes = scheduler.fetch_classes(class_ids)
 
     # Create bitset for personal schedule
@@ -78,8 +73,6 @@ def generate_schedules():
             'sections': sections,
             'matrix': schedule['matrix']
         })
-
-    # print(f"Schedules Data to be sent to client: {schedules_data}")
 
     return jsonify(schedules_data)
 
