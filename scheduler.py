@@ -90,6 +90,8 @@ def fetch_classes(class_ids):
                 except Exception as e:
                     print(f"Error creating bitset for class {course_code}: {e}")
                     continue
+                    print(f"Error creating bitset for class {course_code}: {e}")
+                    continue
         
         if sections:
             classes[class_id] = sections
