@@ -45,82 +45,57 @@ def time_str_to_minutes(time_str):
 
 def fetch_classes(class_ids):
     """
-    Process selected classes from the scraped data.
+    Fetch classes and their time slots from the database.
     Returns a dictionary with class IDs as keys and a list of sections as values.
     Each section includes its time slots represented as bitsets.
     """
-    import csv
-    import tempfile
+    conn = get_db_connection()
     classes = {}
 
-    # Get fresh scraped data
-    with tempfile.NamedTemporaryFile(mode='w+', delete=False, suffix='.csv') as temp_file:
-        url = "https://web.csulb.edu/depts/enrollment/registration/class_schedule/Summer_2025/By_Subject/CECS.html"
-        from classscrape import scrape_cecs_schedule
-        scrape_cecs_schedule(url, temp_file.name)
-
-        # Read the scraped data
-        temp_file.seek(0)
-        reader = csv.DictReader(temp_file)
-        all_classes = list(reader)
-
     for class_id in class_ids:
-        parts = class_id.split('_')
-        course_code = parts[0].replace('CECS ', '')  # Remove 'CECS ' prefix
-        section_number = parts[1] if len(parts) > 1 else None
+        # Fetch class name
+        class_info = conn.execute(
+            'SELECT class_id FROM class_offered WHERE id = ?',
+            (class_id,)
+        ).fetchone()
+        if not class_info:
+            print(f"No class found with id {class_id}")
+            continue
+        class_name = class_info['class_id']
+
+        # Fetch class times
+        times = conn.execute(
+            'SELECT start_time, end_time, days FROM class_times WHERE class_offered_id = ?',
+            (class_id,)
+        ).fetchall()
+
         sections = []
-
-        # Find matching sections
-        for row in all_classes:
-            course_matches = row['course_code'].replace('CECS ', '') == course_code
-            section_matches = not section_number or row['section_number'] == section_number
-            matches = course_matches and section_matches
-            
-            if matches:
-                # Check for missing or invalid data
-                if not row['start_time'] or not row['end_time'] or not row['days']:
-                    print(f"Invalid time data for class {course_code}: {row}")
-                    continue
-                try:
-                    # Create bitset for the time slot
-                    start_time = row['start_time'].zfill(4)
-                    end_time = row['end_time'].zfill(4)
-                    bitset = create_bitset(start_time, end_time, row['days'], time_increment=30)
-                    section = {
-                        'class_id': f"{row['course_code']}_{row['section_number']}",
-                        'class_name': f"{row['course_code']} - {row['course_title']}",
-                        'start_time': start_time,
-                        'end_time': end_time,
-                        'days': row['days'],
-                        'bitset': bitset
-                    }
-                    sections.append(section)
-                except Exception as e:
-                    print(f"Error creating bitset for class {course_code}: {e}")
-                    continue
-                try:
-                    # Create bitset for the time slot
-                    start_time = row['start_time'].zfill(4)
-                    end_time = row['end_time'].zfill(4)
-                    bitset = create_bitset(start_time, end_time, row['days'], time_increment=30)
-                    section = {
-                        'class_id': f"{row['course_code']}_{row['section_number']}",
-                        'class_name': f"{row['course_code']} - {row['course_title']}",
-                        'start_time': start_time,
-                        'end_time': end_time,
-                        'days': row['days'],
-                        'bitset': bitset
-                    }
-                    sections.append(section)
-                except Exception as e:
-                    print(f"Error creating bitset for class {course_code}: {e}")
-                    continue
-
+        for time in times:
+            # Check for missing or invalid data
+            if not time['start_time'] or not time['end_time'] or not time['days']:
+                print(f"Invalid time data for class {class_name}: {time}")
+                continue
+            try:
+                # Assume default increment of 30 if not specified
+                bitset = create_bitset(time['start_time'], time['end_time'], time['days'], time_increment=30)
+                section = {
+                    'class_id': class_id,
+                    'class_name': class_name,
+                    'start_time': time['start_time'],
+                    'end_time': time['end_time'],
+                    'days': time['days'],
+                    'bitset': bitset
+                }
+                sections.append(section)
+            except Exception as e:
+                print(f"Error creating bitset for class {class_name}: {e}")
+                continue
         if sections:
             classes[class_id] = sections
         else:
-            print(f"No valid sections found for class {course_code}")
+            print(f"No valid sections found for class {class_name}")
 
+    conn.close()
     return classes
 
 def create_bitset(start_time_str, end_time_str, days_str, time_increment=30):
