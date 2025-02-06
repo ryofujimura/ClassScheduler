@@ -98,9 +98,6 @@ def fetch_classes(class_ids):
                 except Exception as e:
                     print(f"Error creating bitset for class {course_code}: {e}")
                     continue
-                if not row['start_time'] or not row['end_time'] or not row['days']:
-                    print(f"Invalid time data for class {course_code}: {row}")
-                    continue
                 try:
                     # Create bitset for the time slot
                     start_time = row['start_time'].zfill(4)
