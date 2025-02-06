@@ -11,18 +11,19 @@ def index():
     Render the main page with scraped classes.
     """
     try:
-        # Use an in-memory CSV for temporary storage
-        import io
         import csv
-        output = io.StringIO()
-        url = "https://web.csulb.edu/depts/enrollment/registration/class_schedule/Summer_2025/By_Subject/CECS.html"
-        from classscrape import scrape_cecs_schedule
-        scrape_cecs_schedule(url, output)
+        import tempfile
         
-        # Read CSV data
-        output.seek(0)
-        reader = csv.DictReader(output)
-        classes = list(reader)
+        # Create a temporary file
+        with tempfile.NamedTemporaryFile(mode='w+', delete=False, suffix='.csv') as temp_file:
+            url = "https://web.csulb.edu/depts/enrollment/registration/class_schedule/Summer_2025/By_Subject/CECS.html"
+            from classscrape import scrape_cecs_schedule
+            scrape_cecs_schedule(url, temp_file.name)
+            
+            # Read the temporary file
+            temp_file.seek(0)
+            reader = csv.DictReader(temp_file)
+            classes = list(reader)
         
         return render_template('index.html', classes=classes)
     except Exception as e:
