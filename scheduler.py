@@ -98,6 +98,26 @@ def fetch_classes(class_ids):
                 except Exception as e:
                     print(f"Error creating bitset for class {course_code}: {e}")
                     continue
+                if not row['start_time'] or not row['end_time'] or not row['days']:
+                    print(f"Invalid time data for class {course_code}: {row}")
+                    continue
+                try:
+                    # Create bitset for the time slot
+                    start_time = row['start_time'].zfill(4)
+                    end_time = row['end_time'].zfill(4)
+                    bitset = create_bitset(start_time, end_time, row['days'], time_increment=30)
+                    section = {
+                        'class_id': f"{row['course_code']}_{row['section_number']}",
+                        'class_name': f"{row['course_code']} - {row['course_title']}",
+                        'start_time': start_time,
+                        'end_time': end_time,
+                        'days': row['days'],
+                        'bitset': bitset
+                    }
+                    sections.append(section)
+                except Exception as e:
+                    print(f"Error creating bitset for class {course_code}: {e}")
+                    continue
 
         if sections:
             classes[class_id] = sections
