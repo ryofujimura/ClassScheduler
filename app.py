@@ -54,25 +54,34 @@ def generate_schedules():
     # Create bitset for personal schedule
     personal_bitset = scheduler.create_personal_bitset(personal_schedule, time_increment)
 
-    # Generate all valid schedules
-    schedules = scheduler.generate_schedules(classes, personal_bitset, personal_schedule, time_increment)
+    try:
+        # Generate all valid schedules
+        schedules = scheduler.generate_schedules(classes, personal_bitset, personal_schedule, time_increment)
 
-    # Prepare data to send back to client
-    schedules_data = []
-    for schedule in schedules:
-        sections = []
-        for section in schedule['sections']:
-            sections.append({
-                'class_id': section['class_id'],
-                'class_name': section['class_name'],
-                'start_time': section['start_time'],
-                'end_time': section['end_time'],
-                'days': section['days']
+        # Prepare data to send back to client
+        schedules_data = []
+        for schedule in schedules:
+            sections = []
+            for section in schedule['sections']:
+                sections.append({
+                    'class_id': section['class_id'],
+                    'class_name': section['class_name'],
+                    'start_time': section['start_time'],
+                    'end_time': section['end_time'],
+                    'days': section['days']
+                })
+            schedules_data.append({
+                'sections': sections,
+                'matrix': schedule['matrix']
             })
-        schedules_data.append({
-            'sections': sections,
-            'matrix': schedule['matrix']
-        })
+        
+        if not schedules_data:
+            return jsonify([{"sections": [], "matrix": [['' for _ in range(7)] for _ in range(28)]}])
+            
+        return jsonify(schedules_data)
+    except Exception as e:
+        print(f"Error generating schedules: {e}")
+        return jsonify({"error": str(e)}), 500
 
     return jsonify(schedules_data)
 

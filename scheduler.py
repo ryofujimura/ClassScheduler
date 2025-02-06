@@ -65,12 +65,16 @@ def fetch_classes(class_ids):
         all_classes = list(reader)
 
     for class_id in class_ids:
-        course_code, section_number = class_id.split('_')
+        course_code = class_id.split('_')[0] if '_' in class_id else class_id
+        section_number = class_id.split('_')[1] if '_' in class_id else None
         sections = []
 
         # Find matching sections
         for row in all_classes:
-            if row['course_code'] == course_code and row['section_number'] == section_number:
+            matches = (row['course_code'] == course_code and 
+                      (not section_number or row['section_number'] == section_number))
+            
+            if matches:
                 # Check for missing or invalid data
                 if not row['start_time'] or not row['end_time'] or not row['days']:
                     print(f"Invalid time data for class {course_code}: {row}")
@@ -79,7 +83,7 @@ def fetch_classes(class_ids):
                     # Create bitset for the time slot
                     bitset = create_bitset(row['start_time'], row['end_time'], row['days'], time_increment=30)
                     section = {
-                        'class_id': class_id,
+                        'class_id': f"{row['course_code']}_{row['section_number']}",
                         'class_name': f"{row['course_code']} - {row['course_title']}",
                         'start_time': row['start_time'],
                         'end_time': row['end_time'],
