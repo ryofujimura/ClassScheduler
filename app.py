@@ -16,7 +16,7 @@ def index():
 
         # Create a temporary file
         with tempfile.NamedTemporaryFile(mode='w+', delete=False, suffix='.csv') as temp_file:
-            url = "https://web.csulb.edu/depts/enrollment/registration/class_schedule/Summer_2025/By_Subject/CECS.html"
+            url = "https://web.csulb.edu/depts/enrollment/registration/class_schedule/Spring_2025/By_Subject/CECS.html"
             from classscrape import scrape_cecs_schedule
             scrape_cecs_schedule(url, temp_file.name)
 
