@@ -58,7 +58,7 @@ def fetch_classes(class_ids):
         url = "https://web.csulb.edu/depts/enrollment/registration/class_schedule/Summer_2025/By_Subject/CECS.html"
         from classscrape import scrape_cecs_schedule
         scrape_cecs_schedule(url, temp_file.name)
-        
+
         # Read the scraped data
         temp_file.seek(0)
         reader = csv.DictReader(temp_file)
@@ -67,7 +67,7 @@ def fetch_classes(class_ids):
     for class_id in class_ids:
         course_code, section_number = class_id.split('_')
         sections = []
-        
+
         # Find matching sections
         for row in all_classes:
             if row['course_code'] == course_code and row['section_number'] == section_number:
@@ -75,7 +75,7 @@ def fetch_classes(class_ids):
                 if not row['start_time'] or not row['end_time'] or not row['days']:
                     print(f"Invalid time data for class {course_code}: {row}")
                     continue
-            try:
+                try:
                     # Create bitset for the time slot
                     bitset = create_bitset(row['start_time'], row['end_time'], row['days'], time_increment=30)
                     section = {
@@ -90,7 +90,7 @@ def fetch_classes(class_ids):
                 except Exception as e:
                     print(f"Error creating bitset for class {course_code}: {e}")
                     continue
-        
+
         if sections:
             classes[class_id] = sections
         else:
