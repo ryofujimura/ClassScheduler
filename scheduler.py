@@ -74,7 +74,7 @@ def fetch_classes(class_ids):
         for row in all_classes:
             course_matches = row['course_code'].replace('CECS ', '') == course_code
             section_matches = not section_number or row['section_number'] == section_number
-            if course_matches and section_matches:
+            matches = course_matches and section_matches
             
             if matches:
                 # Check for missing or invalid data
