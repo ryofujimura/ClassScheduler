@@ -167,14 +167,20 @@
                     {% for class in classes %}
                     <div class="col-md-3">
                         <div class="form-check">
-                            <input class="form-check-input class-checkbox" type="checkbox" name="classCheckbox" value="{{ class.id }}" id="class{{ class.id }}">
-                            <label class="form-check-label" for="class{{ class.id }}">
-                                {{ class.class_id }}
+                            <input class="form-check-input class-checkbox" type="checkbox" name="classCheckbox" value="{{ class.course_code }}" id="class{{ class.course_code }}">
+                            <label class="form-check-label" for="class{{ class.course_code }}">
+                                {{ class.course_code }} - {{ class.course_title }} ({{ class.section_number }})
+                                {{ class.days }} {{ class.start_time }}-{{ class.end_time }}
                             </label>
                         </div>
                     </div>
                     {% endfor %}
                 </div>
+                {% if error %}
+                    <div class="alert alert-danger mt-3">
+                        Error loading classes: {{ error }}
+                    </div>
+                {% endif %}
             </div>
 
             <!-- Personal Schedule Blocks -->

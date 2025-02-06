@@ -7,15 +7,26 @@ app = Flask(__name__)
 
 @app.route('/')
 def index():
-
     """
-    Render the main page with the list of available classes.
+    Render the main page with scraped classes.
     """
-    # Fetch all classes from the database to display
-    conn = scheduler.get_db_connection()
-    classes = conn.execute('SELECT id, class_id FROM class_offered').fetchall()
-    conn.close()
-    return render_template('index.html', classes=classes)
+    try:
+        # Use an in-memory CSV for temporary storage
+        import io
+        import csv
+        output = io.StringIO()
+        url = "https://web.csulb.edu/depts/enrollment/registration/class_schedule/Summer_2025/By_Subject/CECS.html"
+        from classscrape import scrape_cecs_schedule
+        scrape_cecs_schedule(url, output)
+        
+        # Read CSV data
+        output.seek(0)
+        reader = csv.DictReader(output)
+        classes = list(reader)
+        
+        return render_template('index.html', classes=classes)
+    except Exception as e:
+        return render_template('index.html', classes=[], error=str(e))
 
 @app.route('/generate_schedules', methods=['POST'])
 def generate_schedules():
