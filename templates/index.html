@@ -132,13 +132,24 @@
         }
 
         #classList {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            gap: calc(var(--spacing-unit) * 1.5);
             margin-bottom: calc(var(--spacing-unit) * 3);
             padding: var(--spacing-unit);
             background: var(--secondary-color);
             border-radius: var(--border-radius);
+        }
+
+        .course-group {
+            background: white;
+            padding: calc(var(--spacing-unit) * 1.5);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+        }
+
+        .course-group h4 {
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--secondary-color);
         }
 
         .form-check {
@@ -163,18 +174,33 @@
             <!-- Class Selection -->
             <div class="mb-4">
                 <h3>Select Classes:</h3>
-                <div id="classList" class="row">
+                <div id="classList">
+                    {% set current_course = namespace(code=None) %}
                     {% for class in classes %}
-                    <div class="col-md-3">
+                        {% if class.course_code != current_course.code %}
+                            {% if current_course.code != None %}
+                                </div>
+                            {% endif %}
+                            <div class="course-group mb-4">
+                            <h4>{{ class.course_code }} - {{ class.course_title }} ({{ class.units }})</h4>
+                            {% set current_course.code = class.course_code %}
+                        {% endif %}
                         <div class="form-check">
-                            <input class="form-check-input class-checkbox" type="checkbox" name="classCheckbox" value="{{ class.course_code }}" id="class{{ class.course_code }}">
-                            <label class="form-check-label" for="class{{ class.course_code }}">
-                                {{ class.course_code }} - {{ class.course_title }} ({{ class.section_number }})
-                                {{ class.days }} {{ class.start_time }}-{{ class.end_time }}
+                            <input class="form-check-input class-checkbox" type="checkbox" 
+                                   name="classCheckbox" 
+                                   value="{{ class.course_code }}_{{ class.section_number }}" 
+                                   id="class{{ class.course_code }}_{{ class.section_number }}">
+                            <label class="form-check-label" for="class{{ class.course_code }}_{{ class.section_number }}">
+                                Section {{ class.section_number }} | {{ class.type }} | 
+                                {{ class.days }} {{ class.start_time }}-{{ class.end_time }} | 
+                                {{ class.building }} {{ class.room }} | 
+                                {{ class.instructor }}
                             </label>
                         </div>
-                    </div>
                     {% endfor %}
+                    {% if classes %}
+                        </div>
+                    {% endif %}
                 </div>
                 {% if error %}
                     <div class="alert alert-danger mt-3">
