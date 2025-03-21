@@ -3,6 +3,7 @@ from bs4 import BeautifulSoup
 import sqlite3
 import os
 import re
+from datetime import datetime
 
 def scrape_cecs_schedule(url, output_db="class_schedule.db"):
     response = requests.get(url)
@@ -98,16 +99,109 @@ def scrape_cecs_schedule(url, output_db="class_schedule.db"):
 
 def parse_time_range(time_text):
     """
-    Given a string like '12:30 - 1:20PM', split into ('12:30', '1:20PM').
-    If no dash is found, return (time_text, '').
+    Splits a time range string like "12:30 - 1:20PM" into (start, end) parts,
+    then normalizes each to a "HH:MMAM/PM" format with a basic heuristic:
+      - If parsing yields start > end, flip AM<->PM on the start time if that fixes it.
     """
+    time_text = time_text.strip()
     if "-" in time_text:
-        parts = time_text.split("-", 1)
-        start = parts[0].strip()
-        end = parts[1].strip()
-        return (start, end)
+        start_raw, end_raw = [x.strip() for x in time_text.split("-", 1)]
     else:
-        return (time_text, "")
+        # If no dash, treat entire string as start time, end is empty
+        start_raw = time_text
+        end_raw = ""
+
+    start_fixed = unify_time_str(start_raw, end_raw)
+    end_fixed = unify_time_str(end_raw, start_raw)
+    
+    # If both times have valid formats, check if start time is later than end time
+    # This could happen if AM/PM is missing or incorrectly inferred
+    if start_fixed and end_fixed and "M" in start_fixed and "M" in end_fixed:
+        start_dt = try_parse_time(start_fixed)
+        end_dt = try_parse_time(end_fixed)
+        
+        if start_dt and end_dt and start_dt > end_dt:
+            # Try flipping AM/PM on start time to see if that fixes the issue
+            if "AM" in start_fixed:
+                start_fixed = start_fixed.replace("AM", "PM")
+            elif "PM" in start_fixed:
+                start_fixed = start_fixed.replace("PM", "AM")
+    
+    return start_fixed, end_fixed
+
+def unify_time_str(time_str, reference_str=""):
+    """
+    Attempt to ensure time_str has an explicit AM/PM by:
+      1) If time_str already has AM/PM, parse & reformat.
+      2) Else if reference_str has AM/PM, use that as a hint.
+      3) Else try 24-hour parse.
+      4) Return "HH:MMAM/PM" if successful, else original string.
+    """
+    if not time_str:
+        return ""
+    
+    time_str = time_str.strip().upper()
+    
+    # Check if time already has AM/PM
+    has_ampm = "AM" in time_str or "PM" in time_str
+    
+    # Add ":00" if no minutes are specified
+    if ":" not in time_str and any(char.isdigit() for char in time_str):
+        digits_only = ''.join(char for char in time_str if char.isdigit())
+        if len(digits_only) <= 2:  # It's likely just hours
+            if has_ampm:
+                am_pm = "AM" if "AM" in time_str else "PM"
+                time_str = time_str.replace(am_pm, "")
+                time_str = f"{time_str.strip()}:00{am_pm}"
+            else:
+                time_str = f"{time_str.strip()}:00"
+    
+    # Strategy 1: Time already has AM/PM
+    if has_ampm:
+        try:
+            dt = datetime.strptime(time_str, "%I:%M%p")
+            return dt.strftime("%I:%M%p")
+        except ValueError:
+            try:
+                dt = datetime.strptime(time_str, "%I%p")
+                return dt.strftime("%I:%M%p")
+            except ValueError:
+                pass
+    
+    # Strategy 2: Use reference_str to infer AM/PM
+    if reference_str:
+        if "AM" in reference_str:
+            time_with_am = f"{time_str}AM"
+            try:
+                dt = datetime.strptime(time_with_am, "%I:%M%p")
+                return dt.strftime("%I:%M%p")
+            except ValueError:
+                pass
+        elif "PM" in reference_str:
+            time_with_pm = f"{time_str}PM"
+            try:
+                dt = datetime.strptime(time_with_pm, "%I:%M%p")
+                return dt.strftime("%I:%M%p")
+            except ValueError:
+                pass
+    
+    # Strategy 3: Try 24-hour format
+    try:
+        dt = datetime.strptime(time_str, "%H:%M")
+        # Convert to 12-hour format with AM/PM
+        return dt.strftime("%I:%M%p")
+    except ValueError:
+        pass
+    
+    # Return original if all strategies fail
+    return time_str
+
+def try_parse_time(time_str):
+    """Helper function to try parsing a time string into a datetime object."""
+    try:
+        return datetime.strptime(time_str, "%I:%M%p")
+    except ValueError:
+        return None
 
 def convert_time_to_numeric(time_str):
     """
@@ -118,13 +212,16 @@ def convert_time_to_numeric(time_str):
         return None
         
     # Remove any spaces
-    time_str = time_str.strip()
+    time_str = time_str.strip().upper()
     
     # Check if AM/PM is specified
     am_pm = ""
-    if time_str.endswith("AM") or time_str.endswith("PM"):
-        am_pm = time_str[-2:]
-        time_str = time_str[:-2]
+    if "AM" in time_str:
+        am_pm = "AM"
+        time_str = time_str.replace("AM", "").strip()
+    elif "PM" in time_str:
+        am_pm = "PM"
+        time_str = time_str.replace("PM", "").strip()
     
     # Split hours and minutes
     if ":" in time_str:
