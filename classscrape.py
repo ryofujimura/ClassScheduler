@@ -166,5 +166,5 @@ def parse_location(location_text):
         return (loc, "")
 
 if __name__ == "__main__":
-    url = "https://web.csulb.edu/depts/enrollment/registration/class_schedule/Summer_2025/By_Subject/CECS.html"
+    url = "https://web.csulb.edu/depts/enrollment/registration/class_schedule/Fall_2025/By_Subject/CECS.html"
     scrape_cecs_schedule(url, "cecs_schedule.csv")
