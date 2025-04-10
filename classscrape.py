@@ -1,253 +1,170 @@
 import requests
 from bs4 import BeautifulSoup
-import sqlite3
-import os
+import csv
 import re
-from datetime import datetime
 
-def scrape_cecs_schedule(url, output_db="class_schedule.db"):
+def scrape_cecs_schedule(url, output_csv="cecs_schedule.csv"):
     response = requests.get(url)
     response.raise_for_status()
     soup = BeautifulSoup(response.text, "html.parser")
 
-    # Create or connect to SQLite database
-    conn = sqlite3.connect(output_db)
-    cursor = conn.cursor()
-    
-    # Create tables if they don't exist
-    cursor.execute('''
-    CREATE TABLE IF NOT EXISTS class_offered (
-        id INTEGER PRIMARY KEY,
-        class_id TEXT NOT NULL
-    )
-    ''')
-    
-    cursor.execute('''
-    CREATE TABLE IF NOT EXISTS class_times (
-        id INTEGER PRIMARY KEY,
-        class_offered_id INTEGER NOT NULL,
-        start_time INTEGER NOT NULL,
-        end_time INTEGER NOT NULL,
-        days TEXT NOT NULL,
-        FOREIGN KEY (class_offered_id) REFERENCES class_offered (id)
-    )
-    ''')
-    
-    # Find all courseBlock containers
-    course_blocks = soup.find_all("div", class_="courseBlock")
-    class_count = 0
-    time_count = 0
+    # Open CSV for writing
+    with open(output_csv, "w", newline="", encoding="utf-8") as f:
+        writer = csv.writer(f)
+        # Define the columns you want in your CSV
+        writer.writerow([
+            "course_code",
+            "course_title",
+            "units",
+            "section_number",
+            "class_number",
+            "type",
+            "days",
+            "start_time",
+            "end_time",
+            "building",
+            "room",
+            "instructor",
+            "comment"
+        ])
 
-    for block in course_blocks:
-        # -------------------------
-        # 1) Extract Course Header
-        # -------------------------
-        course_header = block.find("div", class_="courseHeader")
-        if not course_header:
-            continue
+        # Find all courseBlock containers
+        course_blocks = soup.find_all("div", class_="courseBlock")
+        row_count = 0
 
-        # Course code (e.g., CECS 80)
-        code_span = course_header.find("span", class_="courseCode")
-        course_code = code_span.get_text(strip=True) if code_span else ""
-
-        # Insert into class_offered table
-        cursor.execute("INSERT INTO class_offered (class_id) VALUES (?)", (course_code,))
-        class_offered_id = cursor.lastrowid
-        class_count += 1
-
-        # ------------------------------------
-        # 2) Find the Table with Class Sections
-        # ------------------------------------
-        section_table = block.find("table", class_="sectionTable")
-        if not section_table:
-            continue
-
-        # Process each row in the section table
-        rows = section_table.find_all("tr")
-        if len(rows) <= 1:
-            continue  # nothing but header
-
-        for row in rows[1:]:
-            cells = row.find_all(["th","td"])
-            if len(cells) < 12:
+        for block in course_blocks:
+            # -------------------------
+            # 1) Extract Course Header
+            # -------------------------
+            course_header = block.find("div", class_="courseHeader")
+            if not course_header:
                 continue
 
-            type_ = cells[5].get_text(strip=True)  # e.g. "ACT"
-            days = cells[6].get_text(strip=True)   # e.g. "TuTh"
-            time_text = cells[7].get_text(strip=True)  # e.g. "12:30 - 1:20PM"
+            # Course code (e.g., CECS 80)
+            code_span = course_header.find("span", class_="courseCode")
+            course_code = code_span.get_text(strip=True) if code_span else ""
 
-            # Parse time into start_time and end_time
-            start_time_str, end_time_str = parse_time_range(time_text)
-            
-            # Convert times to numeric format (HHMM) for database storage
-            start_time = convert_time_to_numeric(start_time_str)
-            end_time = convert_time_to_numeric(end_time_str)
-            
-            if start_time and end_time and days:
-                # Insert into class_times table
-                cursor.execute(
-                    "INSERT INTO class_times (class_offered_id, start_time, end_time, days) VALUES (?, ?, ?, ?)",
-                    (class_offered_id, start_time, end_time, days)
-                )
-                time_count += 1
+            # Course title (e.g., FOUNDATIONS FOR DATA COMPUTING)
+            title_span = course_header.find("span", class_="courseTitle")
+            course_title = title_span.get_text(strip=True) if title_span else ""
 
-    # Commit changes and close connection
-    conn.commit()
-    conn.close()
+            # Units (e.g., 1 Unit)
+            units_span = course_header.find("span", class_="units")
+            units = units_span.get_text(strip=True) if units_span else ""
 
-    print(f"Scraping complete. Added {class_count} classes and {time_count} time slots to {output_db}.")
+            # ------------------------------------
+            # 2) Find the Table with Class Sections
+            # ------------------------------------
+            # The <table class="sectionTable"> is typically the *next* sibling of courseHeader
+            # or inside the same courseBlock. We’ll just look inside `block`:
+            section_table = block.find("table", class_="sectionTable")
+            if not section_table:
+                # No table for this course? Skip it.
+                continue
+
+            # Thead/tbody/tr structure: first row is the header (SEC., CLASS #, etc.)
+            # So let’s skip the first row.
+            rows = section_table.find_all("tr")
+            if len(rows) <= 1:
+                continue  # nothing but header
+
+            # 3) For each data row (beyond the header), grab relevant columns
+            #    In your screenshot, the columns appear something like:
+            #        0:  SEC.
+            #        1:  CLASS #
+            #        2:  ??? (maybe No Material Cost)
+            #        3:  ??? (maybe Reserve)
+            #        4:  CLASS NOTES
+            #        5:  TYPE
+            #        6:  DAYS
+            #        7:  TIME
+            #        8:  ??? (Open Seats?)
+            #        9:  LOCATION
+            #        10: INSTRUCTOR
+            #        11: COMMENT
+            #
+            # But in your screenshot’s actual <td> order, it might differ. Verify carefully!
+
+            for row in rows[1:]:
+                cells = row.find_all(["th","td"])
+                # The "th" is often used for SEC. (scope="row"), so we just gather them all
+
+                # If you see fewer or more columns, adjust these indexes to match:
+                if len(cells) < 12:
+                    # Possibly an incomplete or spacer row
+                    continue
+
+                section_number = cells[0].get_text(strip=True)  # e.g. "01"
+                class_number   = cells[1].get_text(strip=True)  # e.g. "11138"
+                # skip indexes 2,3,4 if those are columns you don't need
+                type_          = cells[5].get_text(strip=True)  # e.g. "ACT"
+                days           = cells[6].get_text(strip=True)  # e.g. "TuTh"
+                time_text      = cells[7].get_text(strip=True)  # e.g. "12:30 - 1:20PM"
+                # skip index 8 if you don't need it
+                location       = cells[9].get_text(strip=True)  # e.g. "ECS-413"
+                instructor     = cells[10].get_text(strip=True) # e.g. "Malladi S"
+                comment        = cells[11].get_text(strip=True) # e.g. "Class instruction ..."
+
+                # 4) Parse Time into start_time and end_time
+                start_time, end_time = parse_time_range(time_text)
+
+                # 5) Parse Location into building/room (sometimes "ECS-413" or "ECS 413")
+                building, room = parse_location(location)
+
+                # Write a row to the CSV
+                writer.writerow([
+                    course_code,
+                    course_title,
+                    units,
+                    section_number,
+                    class_number,
+                    type_,
+                    days,
+                    start_time,
+                    end_time,
+                    building,
+                    room,
+                    instructor,
+                    comment
+                ])
+                row_count += 1
+
+        print(f"Scraping complete. Wrote {row_count} rows to {output_csv}.")
 
 def parse_time_range(time_text):
     """
-    Splits a time range string like "12:30 - 1:20PM" into (start, end) parts,
-    then normalizes each to a "HH:MMAM/PM" format with a basic heuristic:
-      - If parsing yields start > end, flip AM<->PM on the start time if that fixes it.
+    Given a string like '12:30 - 1:20PM', split into ('12:30', '1:20PM').
+    If no dash is found, return (time_text, '').
     """
-    time_text = time_text.strip()
     if "-" in time_text:
-        start_raw, end_raw = [x.strip() for x in time_text.split("-", 1)]
+        parts = time_text.split("-", 1)
+        start = parts[0].strip()
+        end = parts[1].strip()
+        return (start, end)
     else:
-        # If no dash, treat entire string as start time, end is empty
-        start_raw = time_text
-        end_raw = ""
+        return (time_text, "")
 
-    start_fixed = unify_time_str(start_raw, end_raw)
-    end_fixed = unify_time_str(end_raw, start_raw)
-    
-    # If both times have valid formats, check if start time is later than end time
-    # This could happen if AM/PM is missing or incorrectly inferred
-    if start_fixed and end_fixed and "M" in start_fixed and "M" in end_fixed:
-        start_dt = try_parse_time(start_fixed)
-        end_dt = try_parse_time(end_fixed)
-        
-        if start_dt and end_dt and start_dt > end_dt:
-            # Try flipping AM/PM on start time to see if that fixes the issue
-            if "AM" in start_fixed:
-                start_fixed = start_fixed.replace("AM", "PM")
-            elif "PM" in start_fixed:
-                start_fixed = start_fixed.replace("PM", "AM")
-    
-    return start_fixed, end_fixed
-
-def unify_time_str(time_str, reference_str=""):
+def parse_location(location_text):
     """
-    Attempt to ensure time_str has an explicit AM/PM by:
-      1) If time_str already has AM/PM, parse & reformat.
-      2) Else if reference_str has AM/PM, use that as a hint.
-      3) Else try 24-hour parse.
-      4) Return "HH:MMAM/PM" if successful, else original string.
+    Given something like 'ECS-413' or 'ECS 413', split into (building, room).
+    If we can’t parse a room, just store the whole thing in 'building'.
     """
-    if not time_str:
-        return ""
+    loc = location_text.strip()
+    if not loc:
+        return ("", "")
     
-    time_str = time_str.strip().upper()
-    
-    # Check if time already has AM/PM
-    has_ampm = "AM" in time_str or "PM" in time_str
-    
-    # Add ":00" if no minutes are specified
-    if ":" not in time_str and any(char.isdigit() for char in time_str):
-        digits_only = ''.join(char for char in time_str if char.isdigit())
-        if len(digits_only) <= 2:  # It's likely just hours
-            if has_ampm:
-                am_pm = "AM" if "AM" in time_str else "PM"
-                time_str = time_str.replace(am_pm, "")
-                time_str = f"{time_str.strip()}:00{am_pm}"
-            else:
-                time_str = f"{time_str.strip()}:00"
-    
-    # Strategy 1: Time already has AM/PM
-    if has_ampm:
-        try:
-            dt = datetime.strptime(time_str, "%I:%M%p")
-            return dt.strftime("%I:%M%p")
-        except ValueError:
-            try:
-                dt = datetime.strptime(time_str, "%I%p")
-                return dt.strftime("%I:%M%p")
-            except ValueError:
-                pass
-    
-    # Strategy 2: Use reference_str to infer AM/PM
-    if reference_str:
-        if "AM" in reference_str:
-            time_with_am = f"{time_str}AM"
-            try:
-                dt = datetime.strptime(time_with_am, "%I:%M%p")
-                return dt.strftime("%I:%M%p")
-            except ValueError:
-                pass
-        elif "PM" in reference_str:
-            time_with_pm = f"{time_str}PM"
-            try:
-                dt = datetime.strptime(time_with_pm, "%I:%M%p")
-                return dt.strftime("%I:%M%p")
-            except ValueError:
-                pass
-    
-    # Strategy 3: Try 24-hour format
-    try:
-        dt = datetime.strptime(time_str, "%H:%M")
-        # Convert to 12-hour format with AM/PM
-        return dt.strftime("%I:%M%p")
-    except ValueError:
-        pass
-    
-    # Return original if all strategies fail
-    return time_str
-
-def try_parse_time(time_str):
-    """Helper function to try parsing a time string into a datetime object."""
-    try:
-        return datetime.strptime(time_str, "%I:%M%p")
-    except ValueError:
-        return None
-
-def convert_time_to_numeric(time_str):
-    """
-    Convert a time string like '12:30PM' to numeric format (HHMM) for database storage.
-    Returns 1230 for '12:30PM', 1330 for '1:30PM', etc.
-    """
-    if not time_str:
-        return None
-        
-    # Remove any spaces
-    time_str = time_str.strip().upper()
-    
-    # Check if AM/PM is specified
-    am_pm = ""
-    if "AM" in time_str:
-        am_pm = "AM"
-        time_str = time_str.replace("AM", "").strip()
-    elif "PM" in time_str:
-        am_pm = "PM"
-        time_str = time_str.replace("PM", "").strip()
-    
-    # Split hours and minutes
-    if ":" in time_str:
-        hours, minutes = time_str.split(":")
+    # Try splitting on space OR dash. This is flexible, but you might need to refine logic.
+    # e.g. "ECS-413" => building="ECS", room="413"
+    # We'll just do a quick check for a dash or space near the end:
+    pattern = r"^(.*?)[-\s]?(\d+)$"  # "ECS" + optional dash or space + digits
+    match = re.match(pattern, loc)
+    if match:
+        bldg, rm = match.groups()
+        return (bldg.strip(), rm.strip())
     else:
-        # If no colon, assume it's just hours
-        hours = time_str
-        minutes = "00"
-    
-    try:
-        hours = int(hours)
-        minutes = int(minutes)
-        
-        # Adjust for PM if needed
-        if am_pm == "PM" and hours < 12:
-            hours += 12
-        elif am_pm == "AM" and hours == 12:
-            hours = 0
-            
-        # Format as HHMM
-        return hours * 100 + minutes
-    except ValueError:
-        return None
+        # If it doesn't match, store entire text as building
+        return (loc, "")
 
 if __name__ == "__main__":
     url = "https://web.csulb.edu/depts/enrollment/registration/class_schedule/Fall_2025/By_Subject/CECS.html"
-    scrape_cecs_schedule(url, "class_schedule.db")
-    url = "https://web.csulb.edu/depts/enrollment/registration/class_schedule/Fall_2025/By_Subject/ENGR.html"
-    scrape_cecs_schedule(url, "class_schedule.db")
+    scrape_cecs_schedule(url, "cecs_schedule.csv")
