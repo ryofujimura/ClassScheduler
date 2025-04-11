@@ -1,4 +1,4 @@
-# app.py
+    # app.py
 
 from flask import Flask, render_template, request, jsonify
 import scheduler  # Ensure scheduler.py is in the same directory or properly referenced
@@ -58,6 +58,7 @@ def generate_schedules():
             sections.append({
                 'class_id': section['class_id'],
                 'class_name': section['class_name'],
+                'class_number': section['class_number'],
                 'start_time': section['start_time'],
                 'end_time': section['end_time'],
                 'days': section['days']

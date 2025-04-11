@@ -228,7 +228,7 @@ def fetch_classes(class_ids):
 
         # Fetch class times
         times = conn.execute(
-            'SELECT start_time, end_time, days FROM class_times WHERE class_offered_id = ?',
+            'SELECT start_time, end_time, days, class_number FROM class_times WHERE class_offered_id = ?',
             (class_id,)
         ).fetchall()
 
@@ -247,6 +247,7 @@ def fetch_classes(class_ids):
                     'start_time': time['start_time'], # Store original strings
                     'end_time': time['end_time'],     # Store original strings
                     'days': time['days'],
+                    'class_number': time['class_number'], # Add class_number field
                     'bitset': bitset
                 }
                 sections.append(section)
@@ -518,7 +519,8 @@ def generate_schedules(classes, personal_bitset, personal_schedule, time_increme
                                class_info = {
                                    'class_name': section['class_name'],
                                    'start_time': section['start_time'], # Keep original string
-                                   'end_time': section['end_time']     # Keep original string
+                                   'end_time': section['end_time'],     # Keep original string
+                                   'class_number': section.get('class_number', '')  # Include class_number if available
                                }
                                time_slot_class[bit_pos] = class_info
                      temp_bitset >>= 1

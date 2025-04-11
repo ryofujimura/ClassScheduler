@@ -230,7 +230,7 @@
                         let classId = `${className}_${startTime}_${endTime}_${j}`;
 
                         if (!displayedClasses[classId]) {
-                            cellContent = `${className}<br>${startTime} - ${endTime}`;
+                            cellContent = `${className}<br>${classInfo.class_number ? '#' + classInfo.class_number + '<br>' : ''}${startTime} - ${endTime}`;
                             displayedClasses[classId] = true;
                         } else {
                             // Optionally, mark continuation
@@ -344,6 +344,7 @@
                                     <thead>
                                         <tr>
                                             <th>Class Name</th>
+                                            <th>Class Number</th>
                                             <th>Time</th>
                                             <th>Days</th>
                                         </tr>
@@ -352,6 +353,7 @@
                                 schedule.sections.forEach(function(section) {
                                     scheduleHtml += `<tr>
                                         <td>${section.class_name}</td>
+                                        <td>${section.class_number}</td>
                                         <td>${formatTime(section.start_time)} - ${formatTime(section.end_time)}</td>
                                         <td>${section.days}</td>
                                     </tr>`;
